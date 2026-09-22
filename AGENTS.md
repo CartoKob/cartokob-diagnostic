@@ -19,3 +19,5 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - National portrait sources are Insee Melodi, not the DDT95 local JSON datasets. Retain source periods and suppressed/missing values.
 - DVF amounts belong to deduplicated mutations, not each row, parcel or dwelling. No inferred price-per-square-metre. Respect coverage gaps in 57/67/68 and PLM arrondissement grouping.
 - Serve the bounded `/api/market` route with the app; a static-only deployment would break market data. Keep original Sites runtime files intact.
+
+- Updated layout: compact full-height map with a right-hand information panel, no left menu. Keep CartoKob ivory/navy serif identity. Commune summary stays above parcel details; use expandable thematic details and independent panel scrolling. On mobile keep the map visible above the panel.

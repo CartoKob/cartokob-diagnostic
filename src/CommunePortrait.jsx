@@ -1,15 +1,23 @@
 import React,{useEffect,useState} from 'react';
-import {ArrowRight,ArrowUpRight} from '@phosphor-icons/react';
+import {ArrowRight,ArrowUpRight,CaretDown} from '@phosphor-icons/react';
 import {loadCommune,fmt} from './territory.js';
 import {MarketSection} from './MarketSection.jsx';
 function Rows({rows}){return <dl className="portrait-rows">{rows.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
-function DataSection({item,children}){return <section className="portrait-section"><p className="eyebrow">{item?.source||'SOURCE NATIONALE'}</p><h3>{item?.title||'Chargement'}</h3>{!item||item.status==='loading'?<p className="loading-copy" role="status">Consultation des données…</p>:item.status==='error'?<p className="data-warning">Source momentanément indisponible. Aucune valeur n’est déduite.</p>:children}<p className="source-caption">{item?.data?.year?`Millésime ${item.data.year} · `:''}{item?.url&&<a href={item.url} target="_blank" rel="noreferrer">Consulter la source <ArrowUpRight size={12}/></a>}</p></section>}
+function DataSection({item,children}){return <details className="portrait-section"><summary><h3>{item?.title||'Chargement des données'}</h3><span>{item?.status==='error'?'Indisponible':!item||item.status==='loading'?'…':'Détails'}</span><CaretDown className="details-chevron" size={14}/></summary>{!item||item.status==='loading'?<p className="loading-copy" role="status">Consultation des données…</p>:item.status==='error'?<p className="data-warning">Source momentanément indisponible. Aucune valeur n’est déduite.</p>:children}<p className="source-caption">{item?.source} · {item?.data?.year?`Millésime ${item.data.year} · `:''}{item?.url&&<a href={item.url} target="_blank" rel="noreferrer">Consulter la source <ArrowUpRight size={12}/></a>}</p></details>}
+function Metric({label,value,item,tone}){return <div className={`compact-metric ${tone}`}><span>{label}</span><strong>{item?.status==='error'?'Indisponible':!item||item.status==='loading'?'…':value}</strong><small>{item?.source||'Source nationale'}{item?.data?.year?` · ${item.data.year}`:''}</small></div>}
 export function CommunePortrait({city,onExplore}){
  const [data,setData]=useState({}),[refresh,setRefresh]=useState(0);
  useEffect(()=>{const controller=new AbortController();setData({});loadCommune(city.code,{signal:controller.signal,onUpdate:(key,value)=>{if(!controller.signal.aborted)setData(d=>({...d,[key]:value}));}});return()=>controller.abort();},[city.code,refresh]);
  const pop=data.population?.data,home=data.housing?.data,equipment=data.equipment?.data,risks=data.risks?.data,income=data.income?.data,employment=data.employment?.data;
  return <section className="commune-portrait" aria-label={`Portrait de ${city.nom}`}>
- <div className="portrait-intro"><div><p className="eyebrow">01 · COMPRENDRE LA COMMUNE</p><h2>Vivre à {city.nom}.</h2><p>{city.departement.nom} · {city.region.nom}</p></div><button className="primary" onClick={onExplore}>Choisir une parcelle <ArrowRight size={18}/></button></div>
+ <div className="commune-metrics">
+ <Metric label="Habitants" value={fmt(pop?.total)} item={data.population} tone="sage"/>
+ <Metric label="Logements" value={fmt(home?.total)} item={data.housing} tone="sand"/>
+ <Metric label="Niveau de vie médian" value={income?.median==null?'Non disponible':fmt(income.median)+' € / an'} item={data.income} tone="lavender"/>
+ <Metric label="Résidents en emploi" value={fmt(employment?.total)} item={data.employment} tone="blue"/>
+ </div>
+ <p className="metrics-note">Niveau de vie par unité de consommation. Dépliez un thème pour consulter les détails et les sources.</p>
+ <details className="commune-details"><summary>Tous les détails de la commune</summary>
  <div className="portrait-grid">
  <DataSection item={data.population}>{pop&&<><div className="stat-display">{fmt(pop.total)} <span>habitants</span></div><p>Répartition par âge</p><Rows rows={pop.ages.map(a=>[a.label,a.value===null?'Non disponible':`${fmt(a.value)}${pop.total>0?' · '+fmt(100*a.value/pop.total,1)+' %':''}`])}/><div className="population-history">{pop.history.map(p=><div key={p.year}><span>{p.year}</span><strong>{fmt(p.value)}</strong></div>)}</div></>}</DataSection>
  <DataSection item={data.housing}>{home&&<><div className="stat-display">{fmt(home.total)} <span>logements</span></div><Rows rows={[["Résidences principales",fmt(home.main)],["Résidences secondaires et occasionnelles",fmt(home.secondary)],["Logements vacants",fmt(home.vacant)],["Maisons",fmt(home.houses)],["Appartements",fmt(home.apartments)],["Propriétaires occupants",home.ownerShare===null?'Non disponible':fmt(home.ownerShare,1)+' % des résidences principales']]}/><p className="source-caption">Effectifs du recensement arrondis. Une donnée absente ou soumise au secret statistique reste non disponible.</p></>}</DataSection>
@@ -20,5 +28,6 @@ export function CommunePortrait({city,onExplore}){
  </div>
  <MarketSection city={city}/>
  <section className="portrait-section"><h3>Approfondir le territoire</h3><div className="source-links"><a href={`https://www.insee.fr/fr/statistiques/2011101?geo=COM-${city.code}`} target="_blank" rel="noreferrer">Dossier complet Insee de la commune <ArrowUpRight/></a></div><p>Desserte détaillée, loyers, qualité de l’eau et énergie restent à intégrer à ce portrait. Leurs valeurs ne sont pas remplacées par des données du Val-d’Oise.</p><button className="text-button" onClick={()=>setRefresh(n=>n+1)}>Réessayer les sources indisponibles</button></section>
+ </details>
  </section>
 }

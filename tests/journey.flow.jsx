@@ -19,6 +19,13 @@ describe('commune then parcel journey',()=>{
   await screen.findByText('Portrait de Lyon');expect(screen.queryByTestId('parcel-report')).toBeNull();
   fireEvent.click(screen.getByText('Point Lyon'));
   expect((await screen.findByTestId('parcel-report')).textContent).toContain('45.75,4.83');
+  const portrait=screen.getByTestId('commune-report'),parcel=screen.getByTestId('parcel-report');
+  expect(portrait.closest('[hidden]')).toBeNull();
+  expect(portrait.closest('aside')).toBe(parcel.closest('aside'));
+  expect(portrait.compareDocumentPosition(parcel)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  fireEvent.click(screen.getByText('Effacer la sélection'));
+  expect(screen.queryByTestId('parcel-report')).toBeNull();
+  expect(screen.getByText('Portrait de Lyon')).toBeTruthy();
   fireEvent.click(screen.getByText('Point Cergy'));
   await screen.findByText('Portrait de Cergy');expect(screen.queryByTestId('parcel-report')).toBeNull();
  });

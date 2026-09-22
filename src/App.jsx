@@ -1,14 +1,16 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {ArrowRight,ArrowLeft,Users,MapTrifold,ArrowUpRight} from '@phosphor-icons/react';
+import {ArrowRight,MapTrifold} from '@phosphor-icons/react';
 import {normalize} from './search.js';
 import {Diagnostic} from './Diagnostic.jsx';
 import {CommunePortrait} from './CommunePortrait.jsx';
 import {MapView} from './MapView.jsx';
 import {SearchBox} from './SearchBox.jsx';
 import {getJson} from './diagnostic.js';
-import {fmt,parentCommune,selectionLevel} from './territory.js';
+import {parentCommune,selectionLevel} from './territory.js';
 export function App(){
  const [communes,setCommunes]=useState([]),[loading,setLoading]=useState(true),[city,setCity]=useState(null),[point,setPoint]=useState(null),[parcels,setParcels]=useState([]),[isochrone,setIsochrone]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[level,setLevel]=useState('commune'),[focusVersion,setFocusVersion]=useState(0);
+ const panel=useRef(),parcelSection=useRef();
+ useEffect(()=>{if(point&&parcelSection.current&&panel.current)panel.current.scrollTo?.({top:parcelSection.current.offsetTop-65,behavior:'smooth'});else panel.current?.scrollTo?.({top:0});},[city?.code,point]);
  const pending=useRef(),selection=useRef(null);selection.current=city;
  useEffect(()=>{const controller=new AbortController();getJson('/communes.json',{signal:controller.signal}).then(data=>{if(controller.signal.aborted)return;const list=data.map(c=>({...c,key:normalize(c.nom)}));setCommunes(list);const code=new URLSearchParams(location.search).get('commune');if(code)setCity(list.find(c=>c.code===code)||null);}).catch(()=>{if(!controller.signal.aborted)setError('Impossible de charger le référentiel. Rechargez la page.');}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return()=>{controller.abort();pending.current?.abort();};},[]);
  function chooseCommune(c){pending.current?.abort();setBusy(false);setCity(c);setLevel('commune');setPoint(null);setParcels([]);setIsochrone(null);setError('');saveUrl(c.code);}
@@ -26,10 +28,20 @@ export function App(){
  return <main>
  <header className="masthead"><a className="brand" href="./" aria-label="CartoKob, accueil">CartoKob<span>COMPRENDRE LES TERRITOIRES<br/>POUR AGIR DEMAIN</span></a><SearchBox communes={communes} loading={loading} selectionLabel={point?.label||city?.nom||''} onSelect={c=>c.address?choosePoint({lat:c.lat,lng:c.lon,label:c.nom},true):chooseCommune(c)}/><div className="brand-note"><span>LE TERRITOIRE<br/>LE QUARTIER<br/>LA PARCELLE</span><img src="/france.svg" alt="France métropolitaine"/><span>UN LIEU.<br/>LES BONNES<br/>QUESTIONS.</span></div></header>
  <div role="status" className={error||busy?'status visible':'status'}>{busy?'Localisation de votre sélection…':error}</div>
- {city&&<nav className="journey" aria-label="Niveau de lecture"><button className={level==='commune'?'selected':''} aria-current={level==='commune'?'step':undefined} onClick={backToCommune}>01 · {city.nom}</button><ArrowRight size={15}/><button className={level==='parcel'?'selected':''} aria-current={level==='parcel'?'step':undefined} onClick={()=>point?setLevel('parcel'):exploreParcel()}>02 · {point?'La parcelle':'Choisir une parcelle'}</button><span>{level==='commune'?'Découvrez la commune, puis cliquez à l’intérieur.':'Diagnostic du point sélectionné'}</span></nav>}
+ <div className="atlas-workspace">
  <MapView city={city} point={point} parcels={parcels} isochrone={isochrone} onPoint={choosePoint} focusVersion={focusVersion}/>
- {city?<><section className="summary" aria-live="polite"><div className="place"><p className="eyebrow">{level==='commune'?'LE TERRITOIRE À LA LOUPE':'LE BIEN DANS SON TERRITOIRE'}</p><div className="place-title"><h1 className={city.nom.length>16?'long':city.nom.length>9?'medium':''}>{city.nom}</h1><span>{city.codeDepartement}</span></div><p className="place-sub">{point?point.label:city.departement.nom}<br/><span className="point-instruction">{point?`${point.lat.toFixed(5)}° N · ${point.lon.toFixed(5)}° E`:city.region.nom}</span></p></div><article className="fact"><span className="fact-icon green"><Users size={28}/></span><div><p className="eyebrow">VIE LOCALE</p><h2>{city.population!=null?`${fmt(city.population)} habitants`:'Population indisponible'}</h2><p>Les habitants, les logements et les services : découvrez le contexte de votre futur lieu de vie.</p><a href="https://geo.api.gouv.fr/" target="_blank" rel="noreferrer">API Découpage administratif <ArrowUpRight size={13}/></a></div></article><article className="fact"><span className="fact-icon peach"><MapTrifold size={28}/></span><div><p className="eyebrow">{level==='parcel'?'VOTRE SÉLECTION':'GÉOGRAPHIE'}</p><h2>{level==='parcel'?(parcels.length?`${parcels.length} parcelle${parcels.length>1?'s':''} identifiée${parcels.length>1?'s':''}`:'Diagnostic en dessous'):city.surface!=null?`${fmt(city.surface/100,1)} km² de territoire`:'Un territoire à explorer'}</h2><p>{level==='parcel'?'Urbanisme, servitudes, risques et environnement au même endroit.':'Un clic à l’intérieur de la commune ouvre le diagnostic du terrain.'}</p><span className="data-note">Code commune : {city.code}</span></div></article></section>
- <div className="report-area" id="informations"><div hidden={level!=='commune'}><CommunePortrait key={city.code} city={city} onExplore={exploreParcel}/></div>{level==='parcel'&&point&&<section className="parcel-report"><button className="text-button back-link" onClick={backToCommune}><ArrowLeft size={16}/>Retour au portrait de {city.nom}</button><Diagnostic key={`${city.code}:${point.lat},${point.lon}`} city={city} point={point} onGeometry={setParcels} onIsochrone={setIsochrone}/></section>}</div></>:<section className="welcome"><p className="eyebrow">VOTRE PROCHAIN LIEU DE VIE</p><h1>Une commune à découvrir.<br/>Un terrain à comprendre.</h1><p>Cliquez sur la carte ou recherchez une adresse. Commencez par le territoire, puis entrez dans le détail de la parcelle.</p></section>}
+ <aside className="information-panel" ref={panel} aria-label="Informations du territoire">
+ <div className="panel-toolbar"><span>VOTRE LIEU À LA LOUPE</span><span>{city?city.codeDepartement:'FRANCE'}</span></div>
+ {city?<>
+ <header className="panel-place"><p className="eyebrow">01 · LA COMMUNE</p><h1>{city.nom}</h1><p>{city.departement.nom} · {city.region.nom}</p></header>
+ <nav className="panel-navigation" aria-label="Niveau de lecture"><button onClick={()=>panel.current?.scrollTo?.({top:0,behavior:'smooth'})}>La commune</button><button onClick={()=>point?parcelSection.current?.scrollIntoView({behavior:'smooth',block:'start'}):exploreParcel()}>{point?'La parcelle':'Choisir une parcelle'} <ArrowRight size={14}/></button></nav>
+ <CommunePortrait key={city.code} city={city} onExplore={exploreParcel}/>
+ <section className="parcel-report" ref={parcelSection} aria-label="Informations de la parcelle">
+ <div className="parcel-divider"><p className="eyebrow">02 · LA PARCELLE</p>{point&&<button className="text-button" onClick={backToCommune}>Effacer la sélection</button>}</div>
+ {point?<Diagnostic key={`${city.code}:${point.lat},${point.lon}`} city={city} point={point} onGeometry={setParcels} onIsochrone={setIsochrone}/>:<div className="parcel-empty"><MapTrifold size={26}/><h2>Et ce terrain ?</h2><p>Cliquez dans la commune pour afficher ici le cadastre, l’urbanisme et les informations du bien.</p><button className="outline-button" onClick={exploreParcel}>Zoomer sur les parcelles <ArrowRight size={15}/></button></div>}
+ </section>
+ </>:<section className="panel-welcome"><p className="eyebrow">L’ATLAS CARTOKOB</p><h1>Un lieu.<br/>Les bonnes questions.</h1><p>Recherchez une commune ou cliquez sur la carte.</p><ol><li><strong>Découvrez la commune</strong><span>Habitants, logements, revenus et vie locale.</span></li><li><strong>Explorez une parcelle</strong><span>Cliquez ensuite dans la commune : les informations du terrain apparaîtront juste dessous.</span></li></ol></section>}
+ </aside></div>
  <footer><div className="signature">Atlas éditorial <span>—</span> CartoKob</div><span className="edition">France métropolitaine <span>·</span> Version de travail</span></footer>
  </main>
 }

@@ -17,7 +17,8 @@ export function MapView({city,point,parcels,isochrone,onPoint,focusVersion=0}){
   cadastre.current=L.tileLayer(CADASTRE_URL,{minZoom:15,maxZoom:19,opacity:.85,attribution:'Parcellaire Express · IGN / DGFiP'}).on('tileerror',()=>setCadastreError(true)).on('tileload',()=>setCadastreError(false)).addTo(m);
   L.control.scale({imperial:false,position:'bottomright'}).addTo(m);
   m.on('zoomend',()=>setZoom(m.getZoom()));m.on('click',e=>callback.current(e.latlng));
-  return()=>{m.remove();map.current=null;};
+  const observer=new ResizeObserver(()=>m.invalidateSize({pan:false}));observer.observe(root.current);
+  return()=>{observer.disconnect();m.remove();map.current=null;};
  },[]);
  useEffect(()=>{
   if(!map.current)return;
