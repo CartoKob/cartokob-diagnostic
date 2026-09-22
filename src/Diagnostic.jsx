@@ -59,7 +59,7 @@ export function Diagnostic({city,point,onGeometry,onIsochrone}){
   if(!tab){setPdfError('Autorisez les fenêtres surgissantes pour ouvrir la synthèse PDF, puis réessayez.');return;}
   tab.opener=null;tab.document.title='CartoKob - Préparation du PDF';tab.document.body.textContent='Préparation de votre synthèse CartoKob…';setPdfBusy(true);
   try{const {createDiagnosticPdf}=await import('./report-pdf.js');const pdf=createDiagnosticPdf({city,point,data});const url=URL.createObjectURL(pdf.output('blob'));if(tab.closed){URL.revokeObjectURL(url);return;}tab.location.replace(url);setTimeout(()=>URL.revokeObjectURL(url),600000);}
-  catch{if(!tab.closed)tab.close();setPdfError('La synthèse PDF n'a pas pu être créée. Réessayez.');}
+  catch{if(!tab.closed)tab.close();setPdfError("La synthèse PDF n'a pas pu être créée. Réessayez.");}
   finally{setPdfBusy(false);}
  }
 
@@ -137,7 +137,7 @@ export function Diagnostic({city,point,onGeometry,onIsochrone}){
  <section className="diagnostic-section">
   <h3>Accessibilité à pied · 15 min</h3>
   <button className="walk-button" onClick={isochrone} disabled={walk==='loading'}>
-   <PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?'Recalculer l'isochrone':'Calculer les 15 min à pied'}
+   <PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?"Recalculer l'isochrone":'Calculer les 15 min à pied'}
   </button>
   {walk==='success'&&<p className="empty-result">Zone affichée sur la carte.</p>}
   {walkError&&<p role="status" className="data-warning">{walkError}</p>}
