@@ -19,6 +19,30 @@ function CountCard({label,src,accentHit}){
  return <div className={n>0&&accentHit?'fact-hit':''}><dt>{label}</dt><dd className={n===0?'count-zero':'count-nonzero'}>{n===0?'Aucun':`${n}`}</dd>{names.length>0&&<p className="card-names">{names.join(' · ')}</p>}</div>;
 }
 
+function ProprietaireBlock({src}){
+ if(!src)return null;
+ if(src.status==='loading')return <div className="prop-block prop-loading"><span className="prop-icon">🔍</span><span>Recherche des propriétaires…</span></div>;
+ if(src.status==='error')return <div className="prop-block prop-unavail"><span className="prop-icon">🏠</span><span>Propriétaire · non disponible</span></div>;
+ const {items}=src;
+ // items = [{nom, isPublic, isMoral}, ...]
+ const morales=items.filter(p=>p.isMoral);
+ const hasPrivate=items.length===0||(items.length>0&&items.some(p=>!p.isMoral));
+ if(!morales.length&&!hasPrivate)return null;
+ return <div className="prop-block">
+  <p className="prop-label">PROPRIÉTÉ</p>
+  <ul className="prop-list">
+   {morales.map((p,i)=><li key={i} className={p.isPublic?'prop-public':'prop-morale'}>
+    <span className="prop-tag">{p.isPublic?'PUBLIC':'SOCIÉTÉ'}</span>
+    <span className="prop-nom">{p.nom}</span>
+   </li>)}
+   {(hasPrivate||items.length===0)&&<li className="prop-prive">
+    <span className="prop-tag">PRIVÉ</span>
+    <span className="prop-nom">Propriétaire(s) personne(s) physique(s) · non diffusé en open data</span>
+   </li>}
+  </ul>
+ </div>;
+}
+
 function sourceValue(source,value){return !source||source.status==='loading'?'…':source.status==='error'?'Indisponible':value;}
 
 export function Diagnostic({city,point,onGeometry,onIsochrone}){
@@ -58,7 +82,7 @@ export function Diagnostic({city,point,onGeometry,onIsochrone}){
  </div>
  {pdfError&&<p role="alert" className="data-warning">{pdfError}</p>}
 
- {/* BLOC 1 : Parcelle & PLU */}
+ {/* BLOC 1 : Parcelle, PLU & Propriété */}
  <section className="diagnostic-section diag-block-primary">
   <h3>Parcelle et urbanisme</h3>
   <dl className="readable-facts colored-facts">
@@ -67,6 +91,7 @@ export function Diagnostic({city,point,onGeometry,onIsochrone}){
    <Fact label="Zone PLU" value={sourceValue(urban,zonePlu)} accent="lavender"/>
    <Fact label="Description de la zone" value={sourceValue(urban,zoneDesc)} accent="blue"/>
   </dl>
+  <ProprietaireBlock src={data.proprietaire}/>
  </section>
 
  {/* BLOC 2 : Bâtiments (si identifié) */}

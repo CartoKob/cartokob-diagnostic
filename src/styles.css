@@ -73,3 +73,24 @@ main{height:100dvh;max-width:none;display:flex;flex-direction:column;overflow:hi
 .information-panel .walk-button{display:inline-flex;align-items:center;gap:8px;background:#10265f;color:#fff;border:0;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:600;cursor:pointer;margin:6px 0}
 .information-panel .walk-button:hover{background:#0d1f4e}
 .information-panel .walk-button:disabled{background:#8d9bb5;cursor:default}
+
+/* ===== PROPRIÉTAIRES BLOCK ===== */
+.prop-block{margin:12px 0 0;border-top:1px solid #d8d8d3;padding-top:10px}
+.prop-label{font-size:9px;font-weight:700;letter-spacing:2px;color:#78849a;margin:0 0 7px}
+.prop-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px}
+.prop-list li{display:flex;align-items:baseline;gap:8px;padding:6px 10px;border-radius:5px;font-size:11px}
+.prop-tag{font-size:8px;font-weight:700;letter-spacing:1.5px;padding:2px 6px;border-radius:3px;flex-shrink:0;white-space:nowrap}
+.prop-nom{font-size:12px;font-weight:600;line-height:1.35;color:#101f52}
+/* Public entity */
+.prop-public{background:#e4f0e8}
+.prop-public .prop-tag{background:#3d7a52;color:#fff}
+/* Private company */
+.prop-morale{background:#e8edf4}
+.prop-morale .prop-tag{background:#345582;color:#fff}
+/* Natural person */
+.prop-prive{background:#f0ede8}
+.prop-prive .prop-tag{background:#7a6a54;color:#fff}
+.prop-prive .prop-nom{color:#69748b;font-weight:400;font-style:italic}
+/* Loading / unavailable */
+.prop-loading,.prop-unavail{display:flex;align-items:center;gap:8px;font-size:11px;color:#78849a;padding:8px 0;margin:10px 0 0;border-top:1px solid #d8d8d3}
+.prop-icon{font-size:14px}

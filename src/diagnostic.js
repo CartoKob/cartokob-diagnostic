@@ -30,6 +30,19 @@ export function buildingSource(parcelId){
  const fields='batiment_groupe_id,annee_construction,nb_log,libelle_adr_principale_ban,classe_bilan_dpe,date_reception_dpe,identifiant_dpe';
  return {key:'buildings',title:'Bâtiments et DPE associés',source:'BDNB · données ouvertes',scope:'Groupes de bâtiments liés à la référence cadastrale ; DPE associé au groupe, pas nécessairement au logement visé',url:'https://api.bdnb.io/v1/bdnb/donnees/batiment_groupe_complet/parcelle?'+new URLSearchParams({parcelle_id:'eq.'+parcelId,select:fields,limit:'20'})};
 }
+export function parseProprietaires(raw){
+ // API Carto proprietaire : retourne un objet { features:[...] } ou tableau direct
+ const list=Array.isArray(raw)?raw:Array.isArray(raw?.features)?raw.features.map(f=>f.properties||f):[];
+ const seen=new Set();const out=[];
+ for(const p of list){
+  const nom=(p.dnomlp||p.ddenom||p.denomination||'').trim().toUpperCase();
+  if(!nom||seen.has(nom))continue;seen.add(nom);
+  const isPublic=/\b(commune|mairie|d[ée]partement|r[ée]gion|[ée]tat|sncf|ratp|rff|anah|epf|epa|oph|ophlm|sem|spla|spl|syndicat|m[ée]tropole|agglom[ée]ration|communaut[ée]|h[oô]pital|universit[ée]|lyc[ée]e|[ée]cole)\b/i.test(nom);
+  const isMoral=nom.length>0&&!/^[*\-\s]+$/.test(nom)&&nom!=='PROPRIETAIRE PRIVE'&&nom!=='NON DIFFUSE';
+  out.push({nom,isPublic,isMoral});
+ }
+ return out;
+}
 export async function loadDiagnostic(point,code,{signal,onUpdate}){
  const sources=diagnosticSources(point,code);let cursor=0;
  sources.forEach(source=>onUpdate(source.key,{...source,status:'loading'}));
@@ -39,11 +52,21 @@ export async function loadDiagnostic(point,code,{signal,onUpdate}){
    const source=sources[cursor++];
    try{const raw=await getJson(source.url,{signal});if(signal?.aborted)return;const items=source.parse(raw);onUpdate(source.key,{...source,status:'success',items,queriedAt:new Date().toISOString(),truncated:Number(raw.numberMatched)>items.length});
     if(source.key==='parcel'&&items.length===1){
-     const building=buildingSource(items[0].properties?.idu);
+     const idu=items[0].properties?.idu;
+     const building=buildingSource(idu);
      if(building){
       onUpdate('buildings',{...building,status:'loading'});
       try{const records=await getJson(building.url,{signal});if(signal?.aborted)return;if(!Array.isArray(records))throw Error('Format bâtiment inattendu');onUpdate('buildings',{...building,status:'success',items:records.map(properties=>({properties})),truncated:records.length>=20,queriedAt:new Date().toISOString()});}
       catch(e){if(!signal?.aborted)onUpdate('buildings',{...building,status:'error',error:e.message});}
+     }
+     if(idu){
+      const propKey='proprietaire';
+      onUpdate(propKey,{key:propKey,title:'Propriétaires cadastraux',source:'DGFiP · via IGN Carto',scope:'Personnes morales uniquement — les personnes physiques ne sont pas diffusées en open data',url:'https://apicarto.ign.fr/api/cadastre/proprietaire?numero_parcelle='+idu,status:'loading',items:[]});
+      try{const propRaw=await getJson('https://apicarto.ign.fr/api/cadastre/proprietaire?numero_parcelle='+idu,{signal});
+       if(signal?.aborted)return;
+       const parsed=parseProprietaires(propRaw);
+       onUpdate(propKey,{key:propKey,title:'Propriétaires cadastraux',source:'DGFiP · via IGN Carto',scope:'Personnes morales uniquement — les personnes physiques ne sont pas diffusées en open data',url:'https://apicarto.ign.fr/api/cadastre/proprietaire?numero_parcelle='+idu,status:'success',items:parsed,queriedAt:new Date().toISOString()});}
+      catch(e){if(!signal?.aborted)onUpdate(propKey,{key:propKey,title:'Propriétaires cadastraux',source:'DGFiP · via IGN Carto',scope:'Personnes morales uniquement',url:'https://apicarto.ign.fr/api/cadastre/proprietaire?numero_parcelle='+idu,status:'error',error:e.message,items:[]});}
      }
     }}
    catch(e){if(!signal?.aborted)onUpdate(source.key,{...source,status:'error',error:e.message});}
