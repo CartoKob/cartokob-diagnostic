@@ -15,3 +15,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Approved design: editorial atlas, ivory ground, navy serif place names, panoramic map.
 - Metropolitan France including Corsica. Distinguish commune-level risks from point-level geometries.
 - Never turn empty or failed source responses into a favorable diagnosis.
+- First map click opens commune portrait; second click in the selected commune opens the exact point/parcel diagnostic. A click in a different commune resets context. Address search goes directly to the point.
+- National portrait sources are Insee Melodi, not the DDT95 local JSON datasets. Retain source periods and suppressed/missing values.
+- DVF amounts belong to deduplicated mutations, not each row, parcel or dwelling. No inferred price-per-square-metre. Respect coverage gaps in 57/67/68 and PLM arrondissement grouping.
+- Serve the bounded `/api/market` route with the app; a static-only deployment would break market data. Keep original Sites runtime files intact.
