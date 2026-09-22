@@ -7,26 +7,21 @@ import {MarketSection} from './MarketSection.jsx';
 import {featureLabel} from './feature-label.js';
 export {featureLabel} from './feature-label.js';
 
-/* Keys displayed in each audience view, in order */
-const AGENT_KEYS=['parcel','urban','buildings','supSurface','supLine','supPoint','risks'];
-const PROMOTEUR_KEYS=['urban','supSurface','supLine','supPoint','risks','nature','birds','znieff','znieff2','reserve','regionalPark','parcel'];
-
 function SourceItems({items,sourceKey}){const labels=[...new Set(items.map(x=>typeof x==='string'?x:featureLabel(x,sourceKey)))];return <p className="concise-result">{labels.join(' · ')}</p>;}
-function Fact({label,value}){return <div><dt>{label}</dt><dd>{value}</dd></div>;}
-function sourceValue(source,value){return !source||source.status==='loading'?'Chargement…':source.status==='error'?'Indisponible':value;}
+function Fact({label,value,accent}){return <div className={accent?`fact-${accent}`:''}><dt>{label}</dt><dd>{value}</dd></div>;}
 
-function DiagSection({d}){
- return <section className="diagnostic-section" key={d.key}>
-  <div className="diagnostic-heading">
-   <h3>{d.key==='risks'?'Risques dans la commune':d.title}</h3>
-   {d.status==='success'&&<span className="source-status">{d.items.length} résultat{d.items.length>1?'s':''}</span>}
-  </div>
-  {d.status==='error'?<p className="data-warning">Données indisponibles</p>:d.status==='loading'?<p>Chargement…</p>:d.items.length?<SourceItems items={d.items} sourceKey={d.key}/>:<p className="empty-result">Aucun élément retourné</p>}
-  {d.truncated&&<p className="data-warning">Résultats partiels</p>}
- </section>;
+function CountCard({label,src,accentHit}){
+ if(!src)return <div><dt>{label}</dt><dd>—</dd></div>;
+ if(src.status==='loading')return <div><dt>{label}</dt><dd className="fact-loading">…</dd></div>;
+ if(src.status==='error')return <div><dt>{label}</dt><dd className="fact-error">Indispo.</dd></div>;
+ const n=src.items.length;
+ const names=n?[...new Set(src.items.map(x=>typeof x==='string'?x:featureLabel(x,src.key)).filter(Boolean))].slice(0,3):[]; 
+ return <div className={n>0&&accentHit?'fact-hit':''}><dt>{label}</dt><dd className={n===0?'count-zero':'count-nonzero'}>{n===0?'Aucun':`${n}`}</dd>{names.length>0&&<p className="card-names">{names.join(' · ')}</p>}</div>;
 }
 
-export function Diagnostic({city,point,audience,onGeometry,onIsochrone}){
+function sourceValue(source,value){return !source||source.status==='loading'?'…':source.status==='error'?'Indisponible':value;}
+
+export function Diagnostic({city,point,onGeometry,onIsochrone}){
  const walkController=useRef(null);
  useEffect(()=>()=>walkController.current?.abort(),[]);
  const [data,setData]=useState({}),[retry,setRetry]=useState(0),[walk,setWalk]=useState('idle');
@@ -44,96 +39,96 @@ export function Diagnostic({city,point,audience,onGeometry,onIsochrone}){
   finally{setPdfBusy(false);}
  }
 
- const parcelId=data.parcel?.items?.length===1&&data.parcel.items[0].properties?.idu?data.parcel.items[0].properties.idu:null;
+ const parcel=data.parcel,urban=data.urban;
+ const parcelId=parcel?.items?.length===1?parcel.items[0].properties?.idu:null;
 
- /* ---------- Sections ordonnées par audience ---------- */
- function renderSections(keys){
-  return keys.map(key=>{const d=data[key];if(!d)return null;return <DiagSection key={key} d={d}/>;});
- }
- function renderRemaining(excludeKeys){
-  return Object.values(data).filter(d=>!excludeKeys.includes(d.key)&&!['parcel','urban'].includes(d.key)&&d.key!=='buildings').map(d=><DiagSection key={d.key} d={d}/>);
- }
+ /* Valeur parcelle+urba */
+ const parcelRef=parcel?.items?.length?parcel.items.map(x=>`${x.properties.section||''} ${x.properties.numero||''}`.trim()).join(' · '):'Non identifiée';
+ const parcelSurf=parcel?.items?.length===1&&parcel.items[0].properties.contenance!=null?fmt(parcel.items[0].properties.contenance)+' m²':'Non disponible';
+ const zonePlu=urban?.items?.length?[...new Set(urban.items.map(x=>x.properties.libelle||x.properties.typezone||'?'))].join(' · '):'Non retournée';
+ const zoneDesc=urban?.items?.length?[...new Set(urban.items.map(x=>x.properties.liblong||'Non renseignée'))].join(' · '):'Non retournée';
 
- const header=<>
-  <p className="eyebrow">DIAGNOSTIC DU LIEU</p>
-  <h2 id="detail-title">{data.parcel?.items?.length===1?"Votre parcelle":"Votre sélection"} à {city.nom}.</h2>
-  <p className="dialog-intro">{point.label||'Point sélectionné sur la carte'}<br/><span>{point.lat.toFixed(5)}° N · {point.lon.toFixed(5)}° E</span></p>
-  <div className="report-actions">
-   <button onClick={()=>setRetry(x=>x+1)}><ArrowClockwise/> Actualiser</button>
-   <button onClick={exportReport} disabled={pdfBusy||Object.keys(data).length===0||Object.values(data).some(d=>d.status==='loading')}><DownloadSimple/> {pdfBusy?'Préparation…':'Synthèse PDF'}</button>
-  </div>
-  {pdfError&&<p role="alert" className="data-warning">{pdfError}</p>}
- </>;
+ return <>
+ <p className="eyebrow">DIAGNOSTIC DU LIEU</p>
+ <h2 id="detail-title">{parcel?.items?.length===1?"Votre parcelle":"Votre sélection"} à {city.nom}.</h2>
+ <p className="dialog-intro">{point.label||'Point sélectionné sur la carte'}<br/><span>{point.lat.toFixed(5)}° N · {point.lon.toFixed(5)}° E</span></p>
+ <div className="report-actions">
+  <button onClick={()=>setRetry(x=>x+1)}><ArrowClockwise/> Actualiser</button>
+  <button onClick={exportReport} disabled={pdfBusy||Object.keys(data).length===0||Object.values(data).some(d=>d.status==='loading')}><DownloadSimple/> {pdfBusy?'Préparation…':'Ouvrir la synthèse PDF'}</button>
+ </div>
+ {pdfError&&<p role="alert" className="data-warning">{pdfError}</p>}
 
- /* ---- AGENT : parcelle + bâti + marché puis le reste ---- */
- if(audience==='agent'){
-  return <>{header}
-   <p className="audience-section-intro agent-intro">Cadastre · bâti · DPE · marché immobilier</p>
-   {/* Parcel + PLU */}
-   <section className="diagnostic-section"><h3>Parcelle et urbanisme</h3><dl className="readable-facts">
-    <Fact label="Parcelle" value={sourceValue(data.parcel,data.parcel?.items?.length?data.parcel.items.map(x=>`${x.properties.section||''} ${x.properties.numero||''}`).join(' · '):'Non identifiée')}/>
-    <Fact label="Surface cadastrale" value={sourceValue(data.parcel,data.parcel?.items?.length===1&&data.parcel.items[0].properties.contenance!=null?fmt(data.parcel.items[0].properties.contenance)+' m²':'Non disponible')}/>
-    <Fact label="Zone PLU" value={sourceValue(data.urban,data.urban?.items?.length?[...new Set(data.urban.items.map(x=>x.properties.libelle||x.properties.typezone||'Non renseignée'))].join(' · '):'Non retournée')}/>
-    <Fact label="Description de la zone" value={sourceValue(data.urban,data.urban?.items?.length?[...new Set(data.urban.items.map(x=>x.properties.libelong||'Non renseignée'))].join(' · '):'Non retournée')}/>
-   </dl></section>
-   {/* Buildings + DPE */}
-   {data.buildings&&<DiagSection d={data.buildings}/>}
-   {/* Risques */}
-   {data.risks&&<DiagSection d={data.risks}/>}
-   {/* Servitudes */}
-   {data.supSurface&&<DiagSection d={data.supSurface}/>}
-   {data.supLine&&<DiagSection d={data.supLine}/>}
-   {data.supPoint&&<DiagSection d={data.supPoint}/>}
-   {/* Market */}
-   <MarketSection city={city} parcelId={parcelId||undefined}/>
-   {/* Accessibilité */}
-   <section className="diagnostic-section"><h3>Accessibilité à pied · 15 min</h3><button className="walk-button" onClick={isochrone} disabled={walk==='loading'}><PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?'Recalculer les 15 minutes':'Voir les 15 minutes à pied'}</button>{walk==='success'&&<p>Zone affichée sur la carte.</p>}{walkError&&<p role="status">{walkError}</p>}</section>
-   <SourceNotes><h4>Diagnostic parcellaire</h4>{Object.values(data).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}</a>{d.queriedAt?' · '+new Date(d.queriedAt).toLocaleDateString('fr-FR'):''}</p>)}<p>Zonages vérifiés au point, pas sur toute la parcelle. Un résultat vide ne prouve pas une absence de contrainte. La constructibilité reste à vérifier dans les documents opposables. DPE associé au groupe de bâtiments, à vérifier pour le logement.</p><div className="source-links"><a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Documents d'urbanisme <ArrowUpRight/></a><a href={`https://www.georisques.gouv.fr/api/v1/rapport_pdf?latlon=${point.lon},${point.lat}`} target="_blank" rel="noreferrer">Rapport Géorisques <ArrowUpRight/></a></div></SourceNotes>
-  </>;
- }
+ {/* BLOC 1 : Parcelle & PLU */}
+ <section className="diagnostic-section diag-block-primary">
+  <h3>Parcelle et urbanisme</h3>
+  <dl className="readable-facts colored-facts">
+   <Fact label="Parcelle" value={sourceValue(parcel,parcelRef)} accent="sage"/>
+   <Fact label="Surface cadastrale" value={sourceValue(parcel,parcelSurf)} accent="sand"/>
+   <Fact label="Zone PLU" value={sourceValue(urban,zonePlu)} accent="lavender"/>
+   <Fact label="Description de la zone" value={sourceValue(urban,zoneDesc)} accent="blue"/>
+  </dl>
+ </section>
 
- /* ---- PROMOTEUR : PLU + contraintes + nature puis parcelle ---- */
- if(audience==='promoteur'){
-  return <>{header}
-   <p className="audience-section-intro promoteur-intro">PLU · servitudes · risques · environnement · potentiel constructible</p>
-   {/* PLU focus */}
-   <section className="diagnostic-section"><h3>Zone PLU et constructibilité</h3><dl className="readable-facts">
-    <Fact label="Zone PLU" value={sourceValue(data.urban,data.urban?.items?.length?[...new Set(data.urban.items.map(x=>x.properties.libelle||x.properties.typezone||'Non renseignée'))].join(' · '):'Non retournée')}/>
-    <Fact label="Description de la zone" value={sourceValue(data.urban,data.urban?.items?.length?[...new Set(data.urban.items.map(x=>x.properties.libelong||'Non renseignée'))].join(' · '):'Non retournée')}/>
-    <Fact label="Parcelle" value={sourceValue(data.parcel,data.parcel?.items?.length?data.parcel.items.map(x=>`${x.properties.section||''} ${x.properties.numero||''}`).join(' · '):'Non identifiée')}/>
-    <Fact label="Surface cadastrale" value={sourceValue(data.parcel,data.parcel?.items?.length===1&&data.parcel.items[0].properties.contenance!=null?fmt(data.parcel.items[0].properties.contenance)+' m²':'Non disponible')}/>
-   </dl><div className="source-links" style={{marginTop:'14px'}}><a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Documents d'urbanisme complets <ArrowUpRight/></a></div></section>
-   {/* Servitudes */}
-   {data.supSurface&&<DiagSection d={data.supSurface}/>}
-   {data.supLine&&<DiagSection d={data.supLine}/>}
-   {data.supPoint&&<DiagSection d={data.supPoint}/>}
-   {/* Risques */}
-   {data.risks&&<DiagSection d={data.risks}/>}
-   {/* Environnement */}
-   {data.nature&&<DiagSection d={data.nature}/>}
-   {data.birds&&<DiagSection d={data.birds}/>}
-   {data.znieff&&<DiagSection d={data.znieff}/>}
-   {data.znieff2&&<DiagSection d={data.znieff2}/>}
-   {data.reserve&&<DiagSection d={data.reserve}/>}
-   {data.regionalPark&&<DiagSection d={data.regionalPark}/>}
-   {/* Bâti existant */}
-   {data.buildings&&<DiagSection d={data.buildings}/>}
-   {/* Accessibilité */}
-   <section className="diagnostic-section"><h3>Accessibilité à pied · 15 min</h3><button className="walk-button" onClick={isochrone} disabled={walk==='loading'}><PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?'Recalculer les 15 minutes':'Calculer l'isochrone piéton'}</button>{walk==='success'&&<p>Zone affichée sur la carte.</p>}{walkError&&<p role="status">{walkError}</p>}</section>
-   <SourceNotes><h4>Diagnostic parcellaire · potentiel constructible</h4>{Object.values(data).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}</a>{d.queriedAt?' · '+new Date(d.queriedAt).toLocaleDateString('fr-FR'):''}</p>)}<p>Zonages vérifiés au point, pas sur toute la parcelle. Un résultat vide ne prouve pas une absence de contrainte. La constructibilité reste à vérifier dans les documents opposables.</p><div className="source-links"><a href={`https://www.georisques.gouv.fr/api/v1/rapport_pdf?latlon=${point.lon},${point.lat}`} target="_blank" rel="noreferrer">Rapport Géorisques <ArrowUpRight/></a></div></SourceNotes>
-  </>;
- }
+ {/* BLOC 2 : Bâtiments (si identifié) */}
+ {data.buildings&&<section className="diagnostic-section">
+  <h3>Bâtiments · BDNB</h3>
+  {data.buildings.status==='loading'?<p>Chargement…</p>:data.buildings.status==='error'?<p className="data-warning">Données indisponibles</p>:data.buildings.items.length?<SourceItems items={data.buildings.items} sourceKey="buildings"/>:<p className="empty-result">Aucun groupe de bâtiments identifié</p>}
+ </section>}
 
- /* ---- PARTICULIER : vue standard ---- */
- return <><p className="eyebrow">DIAGNOSTIC DU LIEU</p><h2 id="detail-title">{data.parcel?.items?.length===1?"Votre parcelle":"Votre sélection"} à {city.nom}.</h2><p className="dialog-intro">{point.label||'Point sélectionné sur la carte'}<br/><span>{point.lat.toFixed(5)}° N · {point.lon.toFixed(5)}° E</span></p><div className="report-actions"><button onClick={()=>setRetry(x=>x+1)}><ArrowClockwise/> Actualiser</button><button onClick={exportReport} disabled={pdfBusy||Object.keys(data).length===0||Object.values(data).some(d=>d.status==='loading')}><DownloadSimple/> {pdfBusy?'Préparation…':'Synthèse PDF'}</button></div>{pdfError&&<p role="alert" className="data-warning">{pdfError}</p>}
- <section className="diagnostic-section"><h3>Parcelle et urbanisme</h3><dl className="readable-facts">
- <Fact label="Parcelle" value={sourceValue(data.parcel,data.parcel?.items?.length?data.parcel.items.map(x=>`${x.properties.section||''} ${x.properties.numero||''}`).join(' · '):'Non identifiée')}/>
- <Fact label="Surface cadastrale" value={sourceValue(data.parcel,data.parcel?.items?.length===1&&data.parcel.items[0].properties.contenance!=null?fmt(data.parcel.items[0].properties.contenance)+' m²':'Non disponible')}/>
- <Fact label="Zone PLU" value={sourceValue(data.urban,data.urban?.items?.length?[...new Set(data.urban.items.map(x=>x.properties.libelle||x.properties.typezone||'Non renseignée'))].join(' · '):'Non retournée')}/>
- <Fact label="Description de la zone" value={sourceValue(data.urban,data.urban?.items?.length?[...new Set(data.urban.items.map(x=>x.properties.libelong||'Non renseignée'))].join(' · '):'Non retournée')}/>
- </dl></section>
- <div className="diagnostic-sections">{Object.values(data).filter(d=>!['parcel','urban'].includes(d.key)).map(d=><DiagSection key={d.key} d={d}/>)}</div>
- <section className="diagnostic-section"><h3>Accessibilité à pied</h3><button className="walk-button" onClick={isochrone} disabled={walk==='loading'}><PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?'Recalculer les 15 minutes':'Voir les 15 minutes à pied'}</button>{walk==='success'&&<p>Zone affichée sur la carte. Explorez-la sur la carte.</p>}{walkError&&<p role="status">{walkError}</p>}</section>
+ {/* BLOC 3 : Servitudes (grille compacte) */}
+ <section className="diagnostic-section">
+  <h3>Servitudes d'utilité publique</h3>
+  <dl className="readable-facts sup-facts">
+   <CountCard label="Surfaciques" src={data.supSurface} accentHit/>
+   <CountCard label="Linéaires" src={data.supLine} accentHit/>
+   <CountCard label="Ponctuelles" src={data.supPoint} accentHit/>
+   {(data.supSurface?.items?.length>0||data.supLine?.items?.length>0||data.supPoint?.items?.length>0)&&
+    <div className="sup-detail-col">
+     {['supSurface','supLine','supPoint'].flatMap(k=>(data[k]?.items||[]).map(x=>typeof x==='string'?x:featureLabel(x,k)).filter(Boolean)).slice(0,6).map((s,i)=><span key={i} className="sup-tag">{s}</span>)}
+    </div>}
+  </dl>
+ </section>
+
+ {/* BLOC 4 : Risques */}
+ {data.risks&&<section className="diagnostic-section">
+  <h3>Risques recensés · GASPAR</h3>
+  {data.risks.status==='loading'?<p>Chargement…</p>:data.risks.status==='error'?<p className="data-warning">Données indisponibles</p>:data.risks.items.length?<SourceItems items={data.risks.items} sourceKey="risks"/>:<p className="empty-result">Aucun risque retourné pour cette commune</p>}
+ </section>}
+
+ {/* BLOC 5 : Environnement (grille compacte) */}
+ <section className="diagnostic-section">
+  <h3>Zonages environnementaux</h3>
+  <dl className="readable-facts env-facts">
+   <CountCard label="Natura 2000 Habitats" src={data.nature} accentHit/>
+   <CountCard label="Natura 2000 Oiseaux" src={data.birds} accentHit/>
+   <CountCard label="ZNIEFF Type I" src={data.znieff} accentHit/>
+   <CountCard label="ZNIEFF Type II" src={data.znieff2} accentHit/>
+   <CountCard label="Réserves naturelles" src={data.reserve} accentHit/>
+   <CountCard label="Parcs naturels rég." src={data.regionalPark} accentHit/>
+  </dl>
+ </section>
+
+ {/* BLOC 6 : Accessibilité à pied */}
+ <section className="diagnostic-section">
+  <h3>Accessibilité à pied · 15 min</h3>
+  <button className="walk-button" onClick={isochrone} disabled={walk==='loading'}>
+   <PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?'Recalculer l'isochrone':'Calculer les 15 min à pied'}
+  </button>
+  {walk==='success'&&<p className="empty-result">Zone affichée sur la carte.</p>}
+  {walkError&&<p role="status" className="data-warning">{walkError}</p>}
+ </section>
+
+ {/* Marché immobilier */}
  {parcelId&&<MarketSection city={city} parcelId={parcelId}/>}
- <SourceNotes><h4>Diagnostic parcellaire</h4>{Object.values(data).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}</a>{d.queriedAt?' · '+new Date(d.queriedAt).toLocaleDateString('fr-FR'):''}</p>)}<p>Zonages vérifiés au point, pas sur toute la parcelle. Un résultat vide ne prouve pas une absence de contrainte. La constructibilité reste à vérifier dans les documents opposables. DPE associé au groupe de bâtiments, à vérifier pour le logement. Les risques sont communaux. Marche : estimation Valhalla / OpenStreetMap, accessibilité PMR non vérifiée.</p><div className="source-links"><a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Documents d'urbanisme <ArrowUpRight/></a><a href={`https://www.georisques.gouv.fr/api/v1/rapport_pdf?latlon=${point.lon},${point.lat}`} target="_blank" rel="noreferrer">Rapport Géorisques <ArrowUpRight/></a></div></SourceNotes></>;
+
+ <SourceNotes>
+  <h4>Diagnostic parcellaire</h4>
+  {Object.values(data).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}</a>{d.queriedAt?' · '+new Date(d.queriedAt).toLocaleDateString('fr-FR'):''}</p>)}
+  <p>Zonages vérifiés au point, pas sur toute la parcelle. Un résultat vide ne prouve pas une absence de contrainte. La constructibilité reste à vérifier dans les documents opposables. DPE associé au groupe de bâtiments, à vérifier pour le logement. Les risques sont communaux. Marche : estimation Valhalla / OpenStreetMap, accessibilité PMR non vérifiée.</p>
+  <div className="source-links">
+   <a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Documents d'urbanisme <ArrowUpRight/></a>
+   <a href={`https://www.georisques.gouv.fr/api/v1/rapport_pdf?latlon=${point.lon},${point.lat}`} target="_blank" rel="noreferrer">Rapport Géorisques <ArrowUpRight/></a>
+  </div>
+ </SourceNotes>
+ </>;
 }

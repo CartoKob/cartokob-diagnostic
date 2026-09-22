@@ -33,3 +33,43 @@ main{height:100dvh;max-width:none;display:flex;flex-direction:column;overflow:hi
 .audience-badge{display:inline-block;margin-left:8px;font-size:13px;vertical-align:middle}
 /* Agent / Promoteur specific commune views */
 .audience-agent .commune-metrics,.audience-promoteur .commune-metrics{margin-top:12px}
+
+/* ===== COLORED FACTS GRID ===== */
+/* Parcelle/urbanisme cards with per-card color accent */
+.colored-facts>div.fact-sage{background:#e1e9da;border-top-color:#5d8a6e}
+.colored-facts>div.fact-sand{background:#eee2cd;border-top-color:#9a7a4a}
+.colored-facts>div.fact-lavender{background:#e6e2ed;border-top-color:#7a6d9a}
+.colored-facts>div.fact-blue{background:#dde6ec;border-top-color:#4a7a8a}
+
+/* ===== POPULATION CARDS – rotating tints ===== */
+.portrait-section .readable-facts>div:nth-child(4n+1){background:#e1e9da;border-top-color:#5d8a6e}
+.portrait-section .readable-facts>div:nth-child(4n+2){background:#eee2cd;border-top-color:#9a7a4a}
+.portrait-section .readable-facts>div:nth-child(4n+3){background:#e6e2ed;border-top-color:#7a6d9a}
+.portrait-section .readable-facts>div:nth-child(4n){background:#dde6ec;border-top-color:#4a7a8a}
+
+/* ===== COMPACT CONSTRAINT GRIDS ===== */
+/* Count badges */
+.count-zero{color:#9ba8b5;font-size:15px!important}
+.count-nonzero{color:#10265f;font-size:19px!important;font-weight:700}
+.fact-hit{background:#e8f2e4!important;border-top-color:#4e7a3e!important}
+.fact-loading{color:#9ba8b5}
+.fact-error{color:#c0392b}
+
+/* Names under count in a card */
+.card-names{font-size:9px;color:#69748b;line-height:1.4;margin:4px 0 0;overflow-wrap:anywhere}
+
+/* Servitude tags (inline chips) */
+.sup-facts{grid-template-columns:1fr 1fr 1fr!important}
+.sup-detail-col{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;padding:4px 0 2px}
+.sup-tag{display:inline-block;background:#e4e9ef;border-radius:4px;padding:3px 8px;font-size:9px;color:#3a4d6a;line-height:1.4}
+
+/* Env grid – 3 columns */
+.env-facts{grid-template-columns:1fr 1fr!important}
+
+/* Primary block emphasis */
+.diag-block-primary h3{color:#10265f}
+
+/* Walk button style fix */
+.information-panel .walk-button{display:inline-flex;align-items:center;gap:8px;background:#10265f;color:#fff;border:0;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:600;cursor:pointer;margin:6px 0}
+.information-panel .walk-button:hover{background:#0d1f4e}
+.information-panel .walk-button:disabled{background:#8d9bb5;cursor:default}

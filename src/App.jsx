@@ -50,7 +50,7 @@ export function App(){
  <div className="panel-toolbar"><span>VOTRE LIEU À LA LOUPE</span><span>{city?city.codeDepartement:'FRANCE'}</span></div>
  {city?<>
  <header className="panel-place"><p className="eyebrow">01 · LA COMMUNE</p><h1>{city.nom}</h1><p>{city.departement.nom} · {city.region.nom}</p></header>
- <nav className="panel-navigation audience-nav" aria-label="Profil utilisateur">
+ <nav className="audience-nav" aria-label="Profil utilisateur">
   {AUDIENCES.map(a=><button key={a.key} className={audience===a.key?'audience-btn active':'audience-btn'} onClick={()=>switchAudience(a.key)}><span className="audience-icon">{a.icon}</span><span>{a.label}</span></button>)}
  </nav>
  {audience==='particulier'&&<div className="audience-hint">Portrait de la commune · prix au m² · vie locale</div>}
