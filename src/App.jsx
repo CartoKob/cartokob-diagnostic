@@ -28,7 +28,7 @@ export function App(){
  function exploreParcel(){setError('');setFocusVersion(v=>v+1);document.getElementById('carte')?.scrollIntoView({behavior:'smooth',block:'start'});}
  function backToCommune(){pending.current?.abort();setBusy(false);setLevel('commune');setPoint(null);setParcels([]);setIsochrone(null);setError('');}
  return <SourceDestination.Provider value={sourceHost}><main>
- <header className="masthead"><a className="brand" href="./" aria-label="CartoKob, accueil">CartoKob<span>COMPRENDRE LES TERRITOIRES<br/>POUR AGIR DEMAIN</span></a><SearchBox communes={communes} loading={loading} selectionLabel={point?.label||city?.nom||''} onSelect={c=>c.address?choosePoint({lat:c.lat,lng:c.lon,label:c.nom},true):chooseCommune(c)}/><div className="brand-note"><span>LE TERRITOIRE<br/>LE QUARTIER<br/>LA PARCELLE</span><img src="/france.svg" alt="France métropolitaine"/><span>UN LIEU.<br/>LES BONNES<br/>QUESTIONS.</span></div></header>
+ <header className="masthead"><a className="brand" href="./" aria-label="CartoParcelle par CartoKob, accueil">CartoParcelle<span>COMMUNE · QUARTIER · PARCELLE<br/>par CartoKob</span></a><SearchBox communes={communes} loading={loading} selectionLabel={point?.label||city?.nom||''} onSelect={c=>c.address?choosePoint({lat:c.lat,lng:c.lon,label:c.nom},true):chooseCommune(c)}/><div className="brand-note"><span>LE TERRITOIRE<br/>LE QUARTIER<br/>LA PARCELLE</span><img src="/france.svg" alt="France métropolitaine"/><span>UN LIEU.<br/>LES BONNES<br/>QUESTIONS.</span></div></header>
  <div role="status" className={error||busy?'status visible':'status'}>{busy?'Localisation de votre sélection…':error}</div>
  <div className="atlas-workspace">
  <MapView city={city} point={point} parcels={parcels} isochrone={isochrone} onPoint={choosePoint} focusVersion={focusVersion}/>
@@ -42,9 +42,9 @@ export function App(){
  <div className="parcel-divider"><p className="eyebrow">02 · LA PARCELLE</p>{point&&<button className="text-button" onClick={backToCommune}>Effacer la sélection</button>}</div>
  {point?<Diagnostic key={`${city.code}:${point.lat},${point.lon}`} city={city} point={point} onGeometry={setParcels} onIsochrone={setIsochrone}/>:<div className="parcel-empty"><MapTrifold size={26}/><h2>Et ce terrain ?</h2><p>Cliquez dans la commune pour afficher ici le cadastre, l’urbanisme et les informations du bien.</p><button className="outline-button" onClick={exploreParcel}>Zoomer sur les parcelles <ArrowRight size={15}/></button></div>}
  </section>
- </>:<section className="panel-welcome"><p className="eyebrow">L’ATLAS CARTOKOB</p><h1>Un lieu.<br/>Les bonnes questions.</h1><p>Recherchez une commune ou cliquez sur la carte.</p><ol><li><strong>Découvrez la commune</strong><span>Habitants, logements, revenus et vie locale.</span></li><li><strong>Explorez une parcelle</strong><span>Cliquez ensuite dans la commune : les informations du terrain apparaîtront juste dessous.</span></li></ol></section>}
+ </>:<section className="panel-welcome"><p className="eyebrow">CARTOPARCELLE</p><h1>Un lieu.<br/>Les bonnes questions.</h1><p>Recherchez une commune ou cliquez sur la carte.</p><ol><li><strong>Découvrez la commune</strong><span>Habitants, logements, revenus et vie locale.</span></li><li><strong>Explorez une parcelle</strong><span>Cliquez ensuite dans la commune : les informations du terrain apparaîtront juste dessous.</span></li></ol></section>}
  {city&&<section className="all-sources"><h3>Sources et précisions</h3><div ref={setSourceHost}/></section>}
  </aside></div>
- <footer><div className="signature">Atlas éditorial <span>—</span> CartoKob</div><span className="edition">France métropolitaine <span>·</span> Version de travail</span></footer>
+ <footer><div className="signature">CartoParcelle <span>—</span> CartoKob</div><span className="edition">France métropolitaine <span>·</span> Version de travail</span></footer>
  </main></SourceDestination.Provider>
 }

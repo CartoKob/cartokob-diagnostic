@@ -1,4 +1,4 @@
-# CartoKob — Aide à la décision
+# CartoParcelle — Aide à la décision territoriale
 
 Un lieu, deux niveaux de lecture : comprendre la commune, puis examiner une parcelle. Interface nationale dans la direction visuelle « atlas éditorial » : ivoire, bleu encre, carte panoramique et titres géographiques.
 
