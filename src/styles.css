@@ -94,3 +94,62 @@ main{height:100dvh;max-width:none;display:flex;flex-direction:column;overflow:hi
 /* Loading / unavailable */
 .prop-loading,.prop-unavail{display:flex;align-items:center;gap:8px;font-size:11px;color:#78849a;padding:8px 0;margin:10px 0 0;border-top:1px solid #d8d8d3}
 .prop-icon{font-size:14px}
+
+/* ===== SECTION EYEBROW (LocalLife headings) ===== */
+.section-eyebrow{font:700 9px/1 system-ui,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#78849a;margin:0 0 10px;padding:0}
+.information-panel .portrait-section h3{display:none}
+
+/* ===== PORTRAIT HERO BANNER ===== */
+.portrait-hero{background:#10265f;border-radius:10px;margin:0 0 14px;padding:20px 20px 20px 20px;position:relative;overflow:hidden;color:#fff}
+.portrait-hero-content{position:relative;z-index:1}
+.portrait-hero-label{font:700 9px/1 system-ui,sans-serif;letter-spacing:2px;color:#8fafd8;margin:0 0 7px;display:flex;align-items:center;gap:5px}
+.portrait-hero-title{font:700 22px/1.15 'Libre Caslon Display',Georgia,serif;color:#fff;margin:0 0 6px}
+.portrait-hero-sub{font-size:11px;color:#9ab8d6;margin:0;line-height:1.5}
+.portrait-hero-sub .hero-parent{font-weight:600;color:#c4d8ec}
+.portrait-hero-deco{position:absolute;right:-20px;top:-20px;z-index:0;pointer-events:none}
+.portrait-hero-deco span{display:block;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
+.portrait-hero-deco span:first-child{width:100px;height:100px;margin:0 0 -40px -40px}
+.portrait-hero-deco span:last-child{width:150px;height:150px;margin:0 0 0 -20px}
+@media(max-width:520px){.portrait-hero-title{font-size:18px}}
+
+/* ===== KPI GRID ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 16px}
+@media(max-width:480px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-card{border-radius:10px;padding:12px 12px 10px;display:flex;flex-direction:column;gap:0}
+.kpi-icon{margin:0 0 8px;opacity:.85}
+.kpi-label{font:700 8.5px/1 system-ui,sans-serif;letter-spacing:1.8px;text-transform:uppercase;margin:0 0 4px;opacity:.75}
+.kpi-value{font:700 20px/1.1 system-ui,sans-serif;margin:0 0 4px}
+.kpi-sub{font-size:10px;line-height:1.4;margin:0;opacity:.7}
+/* Tones */
+.kpi-blue{background:#d8eaf4;color:#1a4a78}
+.kpi-yellow{background:#f0e8c4;color:#6a5010}
+.kpi-lavender{background:#e4dff0;color:#4a3a7a}
+.kpi-green{background:#d8ecd8;color:#2a5a2a}
+.kpi-sand{background:#ede2d0;color:#6a4420}
+.kpi-purple{background:#e4d8f0;color:#5a2a7a}
+
+/* ===== THEME SECTIONS ===== */
+.theme-section{background:#fff;border:1px solid #e0ddd8;border-radius:10px;padding:16px;margin:0 0 10px}
+.theme-header{display:flex;align-items:flex-start;gap:12px;margin:0 0 14px}
+.theme-icon{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff}
+.theme-icon-blue{background:#3a6a98}
+.theme-icon-sand{background:#9a5a2a}
+.theme-icon-lavender{background:#6a4a9a}
+.theme-icon-purple{background:#7a3a9a}
+.theme-icon-green{background:#3a7a4a}
+.theme-icon-amber{background:#8a6010}
+.theme-title{flex:1;min-width:0}
+.theme-num{font:700 9px/1 system-ui,sans-serif;letter-spacing:1.8px;text-transform:uppercase;color:#78849a;margin:0 0 4px}
+.theme-question{font:700 15px/1.25 system-ui,sans-serif;color:#10265f;margin:0}
+.theme-loading{font-size:12px;color:#8d9bb5;margin:0;padding:4px 0}
+.theme-body{}
+
+/* Theme data grid */
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ece9e2;border-radius:7px;overflow:hidden;margin:0}
+.theme-cell{background:#f5f3ee;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.cell-label{font-size:10px;color:#78849a;line-height:1.3}
+.cell-value{font:700 14px/1.2 system-ui,sans-serif;color:#10265f}
+@media(max-width:360px){.theme-grid{grid-template-columns:1fr}}
+
+/* ===== DISTRICT NOTICE ===== */
+.district-notice{font-size:11px;background:#e8eef5;border-left:3px solid #3a6a98;border-radius:0 5px 5px 0;padding:6px 10px;margin:0 0 12px;color:#2a4a6a}

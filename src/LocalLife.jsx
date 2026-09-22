@@ -2,7 +2,7 @@ import React,{useEffect,useState} from 'react';
 import {loadLocalLife} from './local-life.js';
 import {fmt} from './territory.js';
 import {SourceNotes} from './SourceNotes.jsx';
-function Block({title,item,children}){return <section className="portrait-section"><h3>{title}</h3>{!item||item.status==='loading'?<p role="status">Chargement…</p>:item.status==='error'?<p className="data-warning">Données indisponibles</p>:children}</section>;}
+function Block({title,item,children}){return <section className="portrait-section"><p className="section-eyebrow">{title}</p>{!item||item.status==='loading'?<p role="status">Chargement…</p>:item.status==='error'?<p className="data-warning">Données indisponibles</p>:children}</section>;}
 function Facts({rows}){return <dl className="readable-facts">{rows.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;}
 const price=p=>p?`${fmt(p.value,2)} € TTC/m³`:'Non disponible';
 const rentValue=r=>r?.scope==='arrondissements'?`${fmt(r.minimum,1)}–${fmt(r.maximum,1)}`:fmt(r?.value,1);

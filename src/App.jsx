@@ -19,18 +19,19 @@ export function App(){
  const [communes,setCommunes]=useState([]),[loading,setLoading]=useState(true),[city,setCity]=useState(null),[point,setPoint]=useState(null),[parcels,setParcels]=useState([]),[isochrone,setIsochrone]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[level,setLevel]=useState('commune'),[focusVersion,setFocusVersion]=useState(0);
  const [sourceHost,setSourceHost]=useState(null);
  const [audience,setAudience]=useState('particulier');
+ const [districtCode,setDistrictCode]=useState(null);
  const panel=useRef(),parcelSection=useRef(),communeSection=useRef();
  useEffect(()=>{if(point&&parcelSection.current&&panel.current)panel.current.scrollTo?.({top:parcelSection.current.offsetTop-65,behavior:'smooth'});else panel.current?.scrollTo?.({top:0});},[city?.code,point]);
  const pending=useRef(),selection=useRef(null);selection.current=city;
  useEffect(()=>{const controller=new AbortController();getJson(import.meta.env.BASE_URL+'communes.json',{signal:controller.signal}).then(data=>{if(controller.signal.aborted)return;const list=data.map(c=>({...c,key:normalize(c.nom)}));setCommunes(list);const code=new URLSearchParams(location.search).get('commune');if(code)setCity(list.find(c=>c.code===code)||null);}).catch(()=>{if(!controller.signal.aborted)setError('Impossible de charger le référentiel. Rechargez la page.');}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return()=>{controller.abort();pending.current?.abort();};},[]);
- function chooseCommune(c){pending.current?.abort();setBusy(false);setCity(c);setLevel('commune');setPoint(null);setParcels([]);setIsochrone(null);setError('');saveUrl(c.code);}
+ function chooseCommune(c){pending.current?.abort();setBusy(false);setCity(c);setDistrictCode(null);setLevel('commune');setPoint(null);setParcels([]);setIsochrone(null);setError('');saveUrl(c.code);}
  function saveUrl(code){const url=new URL(location.href);url.searchParams.set('commune',code);history.replaceState({},'',url);}
  async function choosePoint({lat,lng,label},directAddress=false){
   if(loading)return;pending.current?.abort();const controller=new AbortController();pending.current=controller;setBusy(true);setError('');
   try{const data=await getJson(`https://geo.api.gouv.fr/communes?lat=${lat}&lon=${lng}&fields=code`,{signal:controller.signal});if(controller.signal.aborted)return;
    const c=communes.find(c=>c.code===parentCommune(data[0]?.code||''));if(!c){setError('Choisissez un lieu situé en France métropolitaine.');return;}
    const nextLevel=selectionLevel(selection.current?.code,c.code,directAddress);
-   setCity(c);setLevel(nextLevel);setPoint(nextLevel==='parcel'?{lat,lon:lng,label:label||'Point sélectionné sur la carte'}:null);setParcels([]);setIsochrone(null);saveUrl(c.code);
+   const rawCode=data[0]?.code||'';setDistrictCode(rawCode&&rawCode!==c.code?rawCode:null);setCity(c);setLevel(nextLevel);setPoint(nextLevel==='parcel'?{lat,lon:lng,label:label||'Point sélectionné sur la carte'}:null);setParcels([]);setIsochrone(null);saveUrl(c.code);
   }catch{if(!controller.signal.aborted)setError('La localisation est momentanément indisponible. Réessayez.');}finally{if(!controller.signal.aborted)setBusy(false);}
  }
  function exploreParcel(){setError('');setFocusVersion(v=>v+1);document.getElementById('carte')?.scrollIntoView({behavior:'smooth',block:'start'});}
@@ -56,7 +57,7 @@ export function App(){
  {audience==='particulier'&&<div className="audience-hint">Portrait de la commune · prix au m² · vie locale</div>}
  {audience==='agent'&&<div className="audience-hint">Cadastre · bâti · DPE · marché immobilier</div>}
  {audience==='promoteur'&&<div className="audience-hint">PLU · servitudes · risques · potentiel constructible</div>}
- <CommunePortrait key={city.code} city={city} audience={audience} onExplore={exploreParcel}/>
+ <CommunePortrait key={districtCode||city.code} city={city} districtCode={districtCode} audience={audience} onExplore={exploreParcel}/>
  <section className="parcel-report" ref={parcelSection} aria-label="Informations de la parcelle">
  <div className="parcel-divider"><p className="eyebrow">02 · LA PARCELLE</p>{point&&<button className="text-button" onClick={backToCommune}>Effacer la sélection</button>}</div>
  {point?<Diagnostic key={`${city.code}:${point.lat},${point.lon}`} city={city} point={point} audience={audience} onGeometry={setParcels} onIsochrone={setIsochrone}/>:<div className="parcel-empty"><MapTrifold size={26}/><h2>
