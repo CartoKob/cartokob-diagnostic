@@ -18,3 +18,18 @@ main{height:100dvh;max-width:none;display:flex;flex-direction:column;overflow:hi
 @media(max-width:700px){.atlas-workspace{grid-template-columns:1fr}.information-panel{padding:0 16px 20px}.panel-place h1{font-size:36px}.compact-metric{min-height:90px;padding:12px}.compact-metric>strong{font-size:28px}.readable-facts>div{padding:12px}.readable-facts dd{font-size:17px}.information-panel .portrait-section h3,.information-panel .diagnostic-section h3{font-size:25px}.information-panel .transactions{grid-template-columns:1fr 1fr}}
 
 .transport-stops{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;max-height:200px;overflow:auto}.transport-stops span{font-size:11px;background:#e1e9da;padding:6px 9px;border-radius:5px}.transport-networks p{font-size:11px;margin:5px 0;color:#637086}.public-contact{padding:12px 0;border-bottom:1px solid #deded5}.public-contact h4{font-size:14px;margin:0 0 5px}.public-contact p,.public-contact a{font-size:12px;line-height:1.5;margin:4px 0}.public-contact a{color:#2353f4}
+
+/* ===== AUDIENCE TABS ===== */
+.audience-nav{display:flex;gap:6px;padding:9px 0;position:sticky;top:0;z-index:5;background:#faf7f0;border-top:1px solid #d8d8d3;border-bottom:1px solid #d8d8d3}
+.audience-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:1;border:0;background:#eeeade;border-radius:7px;padding:9px 6px;color:#4a5568;font-size:10px;font-weight:600;transition:background .15s,color .15s}
+.audience-btn:hover{background:#dfe5d4;color:#10265f}
+.audience-btn.active{background:#10265f;color:#fff}
+.audience-icon{font-size:16px;line-height:1}
+.audience-hint{font-size:10px;color:#78849a;letter-spacing:.5px;padding:7px 0 2px;border-bottom:1px solid #eeece6}
+.audience-section-intro{font-size:11px;color:#69748b;background:#efeee8;border-left:3px solid #92aaa2;padding:8px 10px;border-radius:0 5px 5px 0;margin:12px 0 4px}
+.agent-intro{border-left-color:#4e713e}
+.promoteur-intro{border-left-color:#8b5e36}
+/* Audience badge on section title */
+.audience-badge{display:inline-block;margin-left:8px;font-size:13px;vertical-align:middle}
+/* Agent / Promoteur specific commune views */
+.audience-agent .commune-metrics,.audience-promoteur .commune-metrics{margin-top:12px}
