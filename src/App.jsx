@@ -36,6 +36,7 @@ export function App(){
  }
  function exploreParcel(){setError('');setFocusVersion(v=>v+1);document.getElementById('carte')?.scrollIntoView({behavior:'smooth',block:'start'});}
  function backToCommune(){pending.current?.abort();setBusy(false);setLevel('commune');setPoint(null);setParcels([]);setIsochrone(null);setError('');}
+ function resetApp(){pending.current?.abort();setBusy(false);setCity(null);setDistrictCode(null);setLevel('commune');setPoint(null);setParcels([]);setIsochrone(null);setError('');const url=new URL(location.href);url.searchParams.delete('commune');history.replaceState({},'',url);}
  function switchAudience(key){
   setAudience(key);
   if(key==='particulier'){panel.current?.scrollTo?.({top:0,behavior:'smooth'});}
@@ -48,7 +49,7 @@ export function App(){
  <div className="atlas-workspace">
  <MapView city={city} point={point} parcels={parcels} isochrone={isochrone} onPoint={choosePoint} focusVersion={focusVersion}/>
  <aside className="information-panel" ref={panel} aria-label="Informations du territoire">
- <div className="panel-toolbar"><span>VOTRE LIEU À LA LOUPE</span><span>{city?city.codeDepartement:'FRANCE'}</span></div>
+ <div className="panel-toolbar"><span>VOTRE LIEU À LA LOUPE</span><span>{city?city.codeDepartement:'FRANCE'}</span>{city&&<button className="reset-btn" onClick={resetApp} aria-label="Nouvelle recherche" title="Nouvelle recherche">✕</button>}</div>
  {city?<>
  <header className="panel-place"><p className="eyebrow">01 · LA COMMUNE</p><h1>{city.nom}</h1><p>{city.departement.nom} · {city.region.nom}</p></header>
  <nav className="audience-nav" aria-label="Profil utilisateur">

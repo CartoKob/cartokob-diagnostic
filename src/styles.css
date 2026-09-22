@@ -153,3 +153,11 @@ main{height:100dvh;max-width:none;display:flex;flex-direction:column;overflow:hi
 
 /* ===== DISTRICT NOTICE ===== */
 .district-notice{font-size:11px;background:#e8eef5;border-left:3px solid #3a6a98;border-radius:0 5px 5px 0;padding:6px 10px;margin:0 0 12px;color:#2a4a6a}
+
+/* ── Reset button ─────────────────────────────────── */
+.reset-btn{
+  margin-left:auto;background:none;border:none;cursor:pointer;
+  font-size:13px;color:#78849a;padding:2px 6px;border-radius:4px;
+  line-height:1;transition:background .15s,color .15s;
+}
+.reset-btn:hover{background:#e8e5de;color:#10265f;}
