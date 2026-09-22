@@ -1,5 +1,5 @@
 import React,{useEffect,useState,useRef} from 'react';
-import {ArrowUpRight,ArrowClockwise,DownloadSimple,PersonSimpleWalk} from '@phosphor-icons/react';
+import {ArrowUpRight,ArrowClockwise,DownloadSimple,PersonSimpleWalk,Buildings} from '@phosphor-icons/react';
 import {loadDiagnostic,getJson,featureList} from './diagnostic.js';
 import {SourceNotes} from './SourceNotes.jsx';
 import {fmt} from './territory.js';
@@ -11,149 +11,222 @@ function SourceItems({items,sourceKey}){const labels=[...new Set(items.map(x=>ty
 function Fact({label,value,accent}){return <div className={accent?`fact-${accent}`:''}><dt>{label}</dt><dd>{value}</dd></div>;}
 
 function CountCard({label,src,accentHit}){
- if(!src)return <div><dt>{label}</dt><dd>—</dd></div>;
- if(src.status==='loading')return <div><dt>{label}</dt><dd className="fact-loading">…</dd></div>;
- if(src.status==='error')return <div><dt>{label}</dt><dd className="fact-error">Indispo.</dd></div>;
- const n=src.items.length;
- const names=n?[...new Set(src.items.map(x=>typeof x==='string'?x:featureLabel(x,src.key)).filter(Boolean))].slice(0,3):[]; 
- return <div className={n>0&&accentHit?'fact-hit':''}><dt>{label}</dt><dd className={n===0?'count-zero':'count-nonzero'}>{n===0?'Aucun':`${n}`}</dd>{names.length>0&&<p className="card-names">{names.join(' · ')}</p>}</div>;
+if(!src)return <div><dt>{label}</dt><dd>—</dd></div>;
+if(src.status==='loading')return <div><dt>{label}</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>{label}</dt><dd className="fact-error">Indispo.</dd></div>;
+const n=src.items.length;
+const names=n?[...new Set(src.items.map(x=>typeof x==='string'?x:featureLabel(x,src.key)).filter(Boolean))].slice(0,3):[];
+return <div className={n>0&&accentHit?'fact-hit':''}><dt>{label}</dt><dd className={n===0?'count-zero':'count-nonzero'}>{n===0?'Aucun':`${n}`}</dd>{names.length>0&&<p className="card-names">{names.join(' · ')}</p>}</div>;
 }
 
 function ProprietaireBlock({src}){
- if(!src)return null;
- if(src.status==='loading')return <div className="prop-block prop-loading"><span className="prop-icon">🔍</span><span>Recherche des propriétaires…</span></div>;
- if(src.status==='error')return <div className="prop-block prop-unavail"><span className="prop-icon">🏠</span><span>Propriétaire · non disponible</span></div>;
- const {items}=src;
- // items = [{nom, isPublic, isMoral}, ...]
- const morales=items.filter(p=>p.isMoral);
- const hasPrivate=items.length===0||(items.length>0&&items.some(p=>!p.isMoral));
- if(!morales.length&&!hasPrivate)return null;
- return <div className="prop-block">
-  <p className="prop-label">PROPRIÉTÉ</p>
-  <ul className="prop-list">
-   {morales.map((p,i)=><li key={i} className={p.isPublic?'prop-public':'prop-morale'}>
-    <span className="prop-tag">{p.isPublic?'PUBLIC':'SOCIÉTÉ'}</span>
-    <span className="prop-nom">{p.nom}</span>
-   </li>)}
-   {(hasPrivate||items.length===0)&&<li className="prop-prive">
-    <span className="prop-tag">PRIVÉ</span>
-    <span className="prop-nom">Propriétaire(s) personne(s) physique(s) · non diffusé en open data</span>
-   </li>}
-  </ul>
- </div>;
+if(!src)return null;
+if(src.status==='loading')return <div className="prop-block prop-loading"><span className="prop-icon">🔍</span><span>Recherche des propriétaires…</span></div>;
+if(src.status==='error')return <div className="prop-block prop-unavail"><span className="prop-icon">🏠</span><span>Propriétaire · non disponible</span></div>;
+const {items}=src;
+const morales=items.filter(p=>p.isMoral);
+const hasPrivate=items.length===0||(items.length>0&&items.some(p=>!p.isMoral));
+if(!morales.length&&!hasPrivate)return null;
+return <div className="prop-block">
+<p className="prop-label">PROPRIÉTÉ</p>
+<ul className="prop-list">
+{morales.map((p,i)=><li key={i} className={p.isPublic?'prop-public':'prop-morale'}>
+<span className="prop-tag">{p.isPublic?'PUBLIC':'SOCIÉTÉ'}</span>
+<span className="prop-nom">{p.nom}</span>
+</li>)}
+{(hasPrivate||items.length===0)&&<li className="prop-prive">
+<span className="prop-tag">PRIVÉ</span>
+<span className="prop-nom">Propriétaire(s) personne(s) physique(s) · non diffusé en open data</span>
+</li>}
+</ul>
+</div>;
 }
 
 function sourceValue(source,value){return !source||source.status==='loading'?'…':source.status==='error'?'Indisponible':value;}
 
+/* ---- Bloc Promoteur ---- */
+function ScotLine({src}){
+if(!src||src.status==='loading')return <div><dt>SCoT</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>SCoT</dt><dd className="fact-error">Indisponible</dd></div>;
+if(!src.items.length)return <div><dt>SCoT</dt><dd className="count-zero">Non couvert</dd></div>;
+const nom=src.items.map(f=>f.properties?.nom||f.properties?.lib_doc||'SCoT').join(' · ');
+return <div className="fact-hit"><dt>SCoT</dt><dd>{nom}</dd></div>;
+}
+
+function GpuDocLine({src}){
+if(!src||src.status==='loading')return <div><dt>Doc. urbanisme</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>Doc. urbanisme</dt><dd className="fact-error">Indisponible</dd></div>;
+if(!src.items.length)return <div><dt>Doc. urbanisme</dt><dd className="count-zero">Non retourné</dd></div>;
+const f=src.items[0];const p=f.properties||{};
+const type=p.typedoc||'Document';const nom=p.nom||'';
+const url=p.urlfic;
+return <div className="fact-hit"><dt>Doc. urbanisme</dt><dd>{url?<a href={url} target="_blank" rel="noreferrer">{type}{nom?' · '+nom:''} <ArrowUpRight size={12}/></a>:<>{type}{nom?' · '+nom:''}</>}</dd></div>;
+}
+
+function PprBlock({src}){
+if(!src||src.status==='loading')return <div><dt>PPR</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>PPR</dt><dd className="fact-error">Indisponible</dd></div>;
+if(!src.items.length)return <div><dt>PPR</dt><dd className="count-zero">Aucun PPR communal</dd></div>;
+const approuves=src.items.filter(p=>p.etat_ppr==='APPROUVE');
+const prescrits=src.items.filter(p=>p.etat_ppr==='PRESCRIT');
+const risques=[...new Set(src.items.map(p=>p.lib_risque_jo).filter(Boolean))];
+return <div className={approuves.length?'fact-hit':''}>
+<dt>PPR {approuves.length?<span className="ppr-tag ppr-approuve">APPROUVÉ</span>:prescrits.length?<span className="ppr-tag ppr-prescrit">PRESCRIT</span>:null}</dt>
+<dd>{risques.join(' · ')||src.items.length+' plan(s)'}</dd>
+</div>;
+}
+
+function ArtifBlock({src}){
+if(!src||src.status==='loading')return <div><dt>Artificialisation</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>Artificialisation</dt><dd className="fact-error">Indisponible · CEREMA</dd></div>;
+const s=src.stats;
+if(!s)return <div><dt>Artificialisation</dt><dd className="count-zero">Données non disponibles</dd></div>;
+const taux=s.taux_artif??s.taux_artificialisation??s.tx_artif??null;
+const surfArtif=s.surface_artif??s.surface_artificielle??s.surf_artif??null;
+const surfTot=s.surface_totale??s.surf_totale??s.surf_commune??null;
+const annee=s.annee??s.millesime??s.periode??'';
+if(taux==null&&surfArtif==null)return <div><dt>Artificialisation</dt><dd className="count-zero">Format non reconnu</dd></div>;
+const tauxFmt=taux!=null?+(+taux).toFixed(1)+'%':null;
+const surfFmt=surfArtif!=null?fmt(Math.round(surfArtif))+' ha':null;
+return <div>
+<dt>Artificialisation{annee?' · '+annee:''}</dt>
+<dd>{[tauxFmt,surfFmt].filter(Boolean).join(' — ')}{surfTot!=null&&surfArtif!=null?<span className="kpi-sub"> / {fmt(Math.round(surfTot))} ha commune</span>:null}</dd>
+</div>;
+}
+
 export function Diagnostic({city,point,onGeometry,onIsochrone}){
- const walkController=useRef(null);
- useEffect(()=>()=>walkController.current?.abort(),[]);
- const [data,setData]=useState({}),[retry,setRetry]=useState(0),[walk,setWalk]=useState('idle');
- useEffect(()=>{const controller=new AbortController();setData({});setWalk('idle');setWalkError('');onGeometry([]);onIsochrone(null);walkController.current?.abort();loadDiagnostic(point,city.code,{signal:controller.signal,onUpdate:(key,result)=>{if(!controller.signal.aborted){setData(d=>({...d,[key]:result}));if(key==='parcel'&&result.status==='success')onGeometry(result.items);}}});return()=>controller.abort();},[point,city.code,retry]);
- const [walkError,setWalkError]=useState('');
- async function isochrone(){walkController.current?.abort();const controller=new AbortController();walkController.current=controller;setWalk('loading');setWalkError('');try{const d=await getJson('https://valhalla1.openstreetmap.de/isochrone',{signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({locations:[{lat:point.lat,lon:point.lon}],costing:'pedestrian',contours:[{time:15,color:'265de1'}],polygons:true,generalize:25})});if(controller.signal.aborted)return;if(!featureList(d).length)throw Error();onIsochrone(d);setWalk('success');}catch{if(controller.signal.aborted)return;setWalk('error');setWalkError('Le calcul piéton est indisponible. Réessayez dans quelques instants.');}}
- const [pdfError,setPdfError]=useState(''),[pdfBusy,setPdfBusy]=useState(false);
- async function exportReport(){
-  setPdfError('');
-  const tab=window.open('about:blank','_blank');
-  if(!tab){setPdfError('Autorisez les fenêtres surgissantes pour ouvrir la synthèse PDF, puis réessayez.');return;}
-  tab.opener=null;tab.document.title='CartoKob - Préparation du PDF';tab.document.body.textContent='Préparation de votre synthèse CartoKob…';setPdfBusy(true);
-  try{const {createDiagnosticPdf}=await import('./report-pdf.js');const pdf=createDiagnosticPdf({city,point,data});const url=URL.createObjectURL(pdf.output('blob'));if(tab.closed){URL.revokeObjectURL(url);return;}tab.location.replace(url);setTimeout(()=>URL.revokeObjectURL(url),600000);}
-  catch{if(!tab.closed)tab.close();setPdfError("La synthèse PDF n'a pas pu être créée. Réessayez.");}
-  finally{setPdfBusy(false);}
- }
+const walkController=useRef(null);
+useEffect(()=>()=>walkController.current?.abort(),[]);
+const [data,setData]=useState({}),[retry,setRetry]=useState(0),[walk,setWalk]=useState('idle');
+const [audience,setAudience]=useState('agent');
+useEffect(()=>{const controller=new AbortController();setData({});setWalk('idle');setWalkError('');onGeometry([]);onIsochrone(null);walkController.current?.abort();loadDiagnostic(point,city.code,{signal:controller.signal,onUpdate:(key,result)=>{if(!controller.signal.aborted){setData(d=>({...d,[key]:result}));if(key==='parcel'&&result.status==='success')onGeometry(result.items);}}});return()=>controller.abort();},[point,city.code,retry]);
+const [walkError,setWalkError]=useState('');
+async function isochrone(){walkController.current?.abort();const controller=new AbortController();walkController.current=controller;setWalk('loading');setWalkError('');try{const d=await getJson('https://valhalla1.openstreetmap.de/isochrone',{signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({locations:[{lat:point.lat,lon:point.lon}],costing:'pedestrian',contours:[{time:15,color:'265de1'}],polygons:true,generalize:25})});if(controller.signal.aborted)return;if(!featureList(d).length)throw Error();onIsochrone(d);setWalk('success');}catch{if(controller.signal.aborted)return;setWalk('error');setWalkError('Le calcul piéton est indisponible. Réessayez dans quelques instants.');}}
+const [pdfError,setPdfError]=useState(''),[pdfBusy,setPdfBusy]=useState(false);
+async function exportReport(){
+setPdfError('');
+const tab=window.open('about:blank','_blank');
+if(!tab){setPdfError('Autorisez les fenêtres surgissantes pour ouvrir la synthèse PDF, puis réessayez.');return;}
+tab.opener=null;tab.document.title='CartoKob - Préparation du PDF';tab.document.body.textContent='Préparation de votre synthèse CartoKob…';setPdfBusy(true);
+try{const {createDiagnosticPdf}=await import('./report-pdf.js');const pdf=createDiagnosticPdf({city,point,data});const url=URL.createObjectURL(pdf.output('blob'));if(tab.closed){URL.revokeObjectURL(url);return;}tab.location.replace(url);setTimeout(()=>URL.revokeObjectURL(url),600000);}
+catch{if(!tab.closed)tab.close();setPdfError("La synthèse PDF n'a pas pu être créée. Réessayez.");}
+finally{setPdfBusy(false);}
+}
 
- const parcel=data.parcel,urban=data.urban;
- const parcelId=parcel?.items?.length===1?parcel.items[0].properties?.idu:null;
+const parcel=data.parcel,urban=data.urban;
+const parcelId=parcel?.items?.length===1?parcel.items[0].properties?.idu:null;
 
- /* Valeur parcelle+urba */
- const parcelRef=parcel?.items?.length?parcel.items.map(x=>`${x.properties.section||''} ${x.properties.numero||''}`.trim()).join(' · '):'Non identifiée';
- const parcelSurf=parcel?.items?.length===1&&parcel.items[0].properties.contenance!=null?fmt(parcel.items[0].properties.contenance)+' m²':'Non disponible';
- const zonePlu=urban?.items?.length?[...new Set(urban.items.map(x=>x.properties.libelle||x.properties.typezone||'?'))].join(' · '):'Non retournée';
- const zoneDesc=urban?.items?.length?[...new Set(urban.items.map(x=>x.properties.liblong||'Non renseignée'))].join(' · '):'Non retournée';
+/* Valeur parcelle+urba */
+const parcelRef=parcel?.items?.length?parcel.items.map(x=>`${x.properties.section||''} ${x.properties.numero||''}`.trim()).join(' · '):'Non identifiée';
+const parcelSurf=parcel?.items?.length===1&&parcel.items[0].properties.contenance!=null?fmt(parcel.items[0].properties.contenance)+' m²':'Non disponible';
+const zonePlu=urban?.items?.length?[...new Set(urban.items.map(x=>x.properties.libelle||x.properties.typezone||'?'))].join(' · '):'Non retournée';
+const zoneDesc=urban?.items?.length?[...new Set(urban.items.map(x=>x.properties.liblong||'Non renseignée'))].join(' · '):'Non retournée';
 
- return <>
- <p className="eyebrow">DIAGNOSTIC DU LIEU</p>
- <h2 id="detail-title">{parcel?.items?.length===1?"Votre parcelle":"Votre sélection"} à {city.nom}.</h2>
- <p className="dialog-intro">{point.label||'Point sélectionné sur la carte'}<br/><span>{point.lat.toFixed(5)}° N · {point.lon.toFixed(5)}° E</span></p>
- <div className="report-actions">
-  <button onClick={()=>setRetry(x=>x+1)}><ArrowClockwise/> Actualiser</button>
-  <button onClick={exportReport} disabled={pdfBusy||Object.keys(data).length===0||Object.values(data).some(d=>d.status==='loading')}><DownloadSimple/> {pdfBusy?'Préparation…':'Ouvrir la synthèse PDF'}</button>
- </div>
- {pdfError&&<p role="alert" className="data-warning">{pdfError}</p>}
+return <>
+<p className="eyebrow">DIAGNOSTIC DU LIEU</p>
+<h2 id="detail-title">{parcel?.items?.length===1?"Votre parcelle":"Votre sélection"} à {city.nom}.</h2>
+<p className="dialog-intro">{point.label||'Point sélectionné sur la carte'}<br/><span>{point.lat.toFixed(5)}° N · {point.lon.toFixed(5)}° E</span></p>
+<div className="report-actions">
+<button onClick={()=>setRetry(x=>x+1)}><ArrowClockwise/> Actualiser</button>
+<button onClick={exportReport} disabled={pdfBusy||Object.keys(data).length===0||Object.values(data).some(d=>d.status==='loading')}><DownloadSimple/> {pdfBusy?'Préparation…':'Ouvrir la synthèse PDF'}</button>
+</div>
+{pdfError&&<p role="alert" className="data-warning">{pdfError}</p>}
 
- {/* BLOC 1 : Parcelle, PLU & Propriété */}
- <section className="diagnostic-section diag-block-primary">
-  <h3>Parcelle et urbanisme</h3>
-  <dl className="readable-facts colored-facts">
-   <Fact label="Parcelle" value={sourceValue(parcel,parcelRef)} accent="sage"/>
-   <Fact label="Surface cadastrale" value={sourceValue(parcel,parcelSurf)} accent="sand"/>
-   <Fact label="Zone PLU" value={sourceValue(urban,zonePlu)} accent="lavender"/>
-   <Fact label="Description de la zone" value={sourceValue(urban,zoneDesc)} accent="blue"/>
-  </dl>
-  <ProprietaireBlock src={data.proprietaire}/>
- </section>
+{/* Audience tabs */}
+<div className="audience-nav">
+<button className={'audience-btn'+(audience==='agent'?' active':'')} onClick={()=>setAudience('agent')}>Agent</button>
+<button className={'audience-btn'+(audience==='promoteur'?' active':'')} onClick={()=>setAudience('promoteur')}><Buildings size={14}/> Promoteur</button>
+</div>
 
- {/* BLOC 2 : Bâtiments (si identifié) */}
- {data.buildings&&<section className="diagnostic-section">
-  <h3>Bâtiments · BDNB</h3>
-  {data.buildings.status==='loading'?<p>Chargement…</p>:data.buildings.status==='error'?<p className="data-warning">Données indisponibles</p>:data.buildings.items.length?<SourceItems items={data.buildings.items} sourceKey="buildings"/>:<p className="empty-result">Aucun groupe de bâtiments identifié</p>}
- </section>}
+{/* BLOC 1 : Parcelle, PLU & Propriété */}
+<section className="diagnostic-section diag-block-primary">
+<h3>Parcelle et urbanisme</h3>
+<dl className="readable-facts colored-facts">
+<Fact label="Parcelle" value={sourceValue(parcel,parcelRef)} accent="sage"/>
+<Fact label="Surface cadastrale" value={sourceValue(parcel,parcelSurf)} accent="sand"/>
+<Fact label="Zone PLU" value={sourceValue(urban,zonePlu)} accent="lavender"/>
+<Fact label="Description de la zone" value={sourceValue(urban,zoneDesc)} accent="blue"/>
+</dl>
+<ProprietaireBlock src={data.proprietaire}/>
+</section>
 
- {/* BLOC 3 : Servitudes (grille compacte) */}
- <section className="diagnostic-section">
-  <h3>Servitudes d'utilité publique</h3>
-  <dl className="readable-facts sup-facts">
-   <CountCard label="Surfaciques" src={data.supSurface} accentHit/>
-   <CountCard label="Linéaires" src={data.supLine} accentHit/>
-   <CountCard label="Ponctuelles" src={data.supPoint} accentHit/>
-   {(data.supSurface?.items?.length>0||data.supLine?.items?.length>0||data.supPoint?.items?.length>0)&&
-    <div className="sup-detail-col">
-     {['supSurface','supLine','supPoint'].flatMap(k=>(data[k]?.items||[]).map(x=>typeof x==='string'?x:featureLabel(x,k)).filter(Boolean)).slice(0,6).map((s,i)=><span key={i} className="sup-tag">{s}</span>)}
-    </div>}
-  </dl>
- </section>
+{/* BLOC PROMOTEUR : Foncier & Constructibilité */}
+{audience==='promoteur'&&<section className="diagnostic-section promoteur-section">
+<h3>Foncier &amp; Constructibilité</h3>
+<dl className="readable-facts colored-facts promoteur-facts">
+<ScotLine src={data.scot}/>
+<GpuDocLine src={data.gpuDoc}/>
+<PprBlock src={data.ppr}/>
+<ArtifBlock src={data.artificialisation}/>
+</dl>
+<div className="promoteur-links">
+<a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Géoportail de l'urbanisme <ArrowUpRight size={12}/></a>
+<a href="https://artificialisation.developpement-durable.gouv.fr/" target="_blank" rel="noreferrer">Portail ZAN <ArrowUpRight size={12}/></a>
+<a href="https://www.georisques.gouv.fr/" target="_blank" rel="noreferrer">Géorisques <ArrowUpRight size={12}/></a>
+</div>
+<p className="promoteur-disclaimer">SCoT, document d'urbanisme et PPR vérifiés au point. Taux d'artificialisation à l'échelle de la commune (source CEREMA). La constructibilité effective reste à vérifier dans les documents opposables.</p>
+</section>}
 
- {/* BLOC 4 : Risques */}
- {data.risks&&<section className="diagnostic-section">
-  <h3>Risques recensés · GASPAR</h3>
-  {data.risks.status==='loading'?<p>Chargement…</p>:data.risks.status==='error'?<p className="data-warning">Données indisponibles</p>:data.risks.items.length?<SourceItems items={data.risks.items} sourceKey="risks"/>:<p className="empty-result">Aucun risque retourné pour cette commune</p>}
- </section>}
+{/* BLOC 2 : Bâtiments (si identifié) */}
+{data.buildings&&<section className="diagnostic-section">
+<h3>Bâtiments · BDNB</h3>
+{data.buildings.status==='loading'?<p>Chargement…</p>:data.buildings.status==='error'?<p className="data-warning">Données indisponibles</p>:data.buildings.items.length?<SourceItems items={data.buildings.items} sourceKey="buildings"/>:<p className="empty-result">Aucun groupe de bâtiments identifié</p>}
+</section>}
 
- {/* BLOC 5 : Environnement (grille compacte) */}
- <section className="diagnostic-section">
-  <h3>Zonages environnementaux</h3>
-  <dl className="readable-facts env-facts">
-   <CountCard label="Natura 2000 Habitats" src={data.nature} accentHit/>
-   <CountCard label="Natura 2000 Oiseaux" src={data.birds} accentHit/>
-   <CountCard label="ZNIEFF Type I" src={data.znieff} accentHit/>
-   <CountCard label="ZNIEFF Type II" src={data.znieff2} accentHit/>
-   <CountCard label="Réserves naturelles" src={data.reserve} accentHit/>
-   <CountCard label="Parcs naturels rég." src={data.regionalPark} accentHit/>
-  </dl>
- </section>
+{/* BLOC 3 : Servitudes (grille compacte) */}
+<section className="diagnostic-section">
+<h3>Servitudes d'utilité publique</h3>
+<dl className="readable-facts sup-facts">
+<CountCard label="Surfaciques" src={data.supSurface} accentHit/>
+<CountCard label="Linéaires" src={data.supLine} accentHit/>
+<CountCard label="Ponctuelles" src={data.supPoint} accentHit/>
+{(data.supSurface?.items?.length>0||data.supLine?.items?.length>0||data.supPoint?.items?.length>0)&&
+<div className="sup-detail-col">
+{['supSurface','supLine','supPoint'].flatMap(k=>(data[k]?.items||[]).map(x=>typeof x==='string'?x:featureLabel(x,k)).filter(Boolean)).slice(0,6).map((s,i)=><span key={i} className="sup-tag">{s}</span>)}
+</div>}
+</dl>
+</section>
 
- {/* BLOC 6 : Accessibilité à pied */}
- <section className="diagnostic-section">
-  <h3>Accessibilité à pied · 15 min</h3>
-  <button className="walk-button" onClick={isochrone} disabled={walk==='loading'}>
-   <PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?"Recalculer l'isochrone":'Calculer les 15 min à pied'}
-  </button>
-  {walk==='success'&&<p className="empty-result">Zone affichée sur la carte.</p>}
-  {walkError&&<p role="status" className="data-warning">{walkError}</p>}
- </section>
+{/* BLOC 4 : Risques */}
+{data.risks&&<section className="diagnostic-section">
+<h3>Risques recensés · GASPAR</h3>
+{data.risks.status==='loading'?<p>Chargement…</p>:data.risks.status==='error'?<p className="data-warning">Données indisponibles</p>:data.risks.items.length?<SourceItems items={data.risks.items} sourceKey="risks"/>:<p className="empty-result">Aucun risque retourné pour cette commune</p>}
+</section>}
 
- {/* Marché immobilier */}
- {parcelId&&<MarketSection city={city} parcelId={parcelId}/>}
+{/* BLOC 5 : Environnement (grille compacte) */}
+<section className="diagnostic-section">
+<h3>Zonages environnementaux</h3>
+<dl className="readable-facts env-facts">
+<CountCard label="Natura 2000 Habitats" src={data.nature} accentHit/>
+<CountCard label="Natura 2000 Oiseaux" src={data.birds} accentHit/>
+<CountCard label="ZNIEFF Type I" src={data.znieff} accentHit/>
+<CountCard label="ZNIEFF Type II" src={data.znieff2} accentHit/>
+<CountCard label="Réserves naturelles" src={data.reserve} accentHit/>
+<CountCard label="Parcs naturels rég." src={data.regionalPark} accentHit/>
+</dl>
+</section>
 
- <SourceNotes>
-  <h4>Diagnostic parcellaire</h4>
-  {Object.values(data).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}</a>{d.queriedAt?' · '+new Date(d.queriedAt).toLocaleDateString('fr-FR'):''}</p>)}
-  <p>Zonages vérifiés au point, pas sur toute la parcelle. Un résultat vide ne prouve pas une absence de contrainte. La constructibilité reste à vérifier dans les documents opposables. DPE associé au groupe de bâtiments, à vérifier pour le logement. Les risques sont communaux. Marche : estimation Valhalla / OpenStreetMap, accessibilité PMR non vérifiée.</p>
-  <div className="source-links">
-   <a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Documents d'urbanisme <ArrowUpRight/></a>
-   <a href={`https://www.georisques.gouv.fr/api/v1/rapport_pdf?latlon=${point.lon},${point.lat}`} target="_blank" rel="noreferrer">Rapport Géorisques <ArrowUpRight/></a>
-  </div>
- </SourceNotes>
- </>;
+{/* BLOC 6 : Accessibilité à pied */}
+<section className="diagnostic-section">
+<h3>Accessibilité à pied · 15 min</h3>
+<button className="walk-button" onClick={isochrone} disabled={walk==='loading'}>
+<PersonSimpleWalk/>{walk==='loading'?'Calcul en cours…':walk==='success'?"Recalculer l'isochrone":'Calculer les 15 min à pied'}
+</button>
+{walk==='success'&&<p className="empty-result">Zone affichée sur la carte.</p>}
+{walkError&&<p role="status" className="data-warning">{walkError}</p>}
+</section>
+
+{/* Marché immobilier */}
+{parcelId&&<MarketSection city={city} parcelId={parcelId}/>}
+
+<SourceNotes>
+<h4>Diagnostic parcellaire</h4>
+{Object.values(data).filter(d=>d.key&&d.url).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}</a>{d.queriedAt?' · '+new Date(d.queriedAt).toLocaleDateString('fr-FR'):''}</p>)}
+<p>Zonages vérifiés au point, pas sur toute la parcelle. Un résultat vide ne prouve pas une absence de contrainte. La constructibilité reste à vérifier dans les documents opposables. DPE associé au groupe de bâtiments, à vérifier pour le logement. Les risques et PPR sont communaux. Taux d'artificialisation à l'échelle de la commune. Marche : estimation Valhalla / OpenStreetMap, accessibilité PMR non vérifiée.</p>
+<div className="source-links">
+<a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Documents d'urbanisme <ArrowUpRight/></a>
+<a href={`https://www.georisques.gouv.fr/api/v1/rapport_pdf?latlon=${point.lon},${point.lat}`} target="_blank" rel="noreferrer">Rapport Géorisques <ArrowUpRight/></a>
+</div>
+</SourceNotes>
+</>;
 }
