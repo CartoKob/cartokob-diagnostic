@@ -1,6 +1,7 @@
 # Design QA — volet compact CartoKob
 
 - Source visuelle : captures utilisateur du 22 septembre 2026, 13:53:25 et 13:53:53, visibles dans la conversation. Référence de marque conservée : docs/reference-visuelle.png.
+- Dernière demande : volet élargi, lecture sans accordéons, résultats synthétiques et sources regroupées en fin de volet. Captures utilisateur de 14:07, 14:08 et 14:10 prises comme références.
 - Cible : carte utilisable à gauche, volet compact à droite, chiffres clés communaux puis informations parcellaires en dessous, aucun menu à gauche. Palette ivoire/marine et typographie CartoKob conservées par demande explicite.
 - Implémentation : application locale port 4180.
 - Capture d’implémentation, viewport, dimensions et normalisation : indisponibles.

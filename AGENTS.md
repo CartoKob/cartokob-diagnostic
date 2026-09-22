@@ -21,3 +21,5 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Serve the bounded `/api/market` route with the app; a static-only deployment would break market data. Keep original Sites runtime files intact.
 
 - Updated layout: compact full-height map with a right-hand information panel, no left menu. Keep CartoKob ivory/navy serif identity. Commune summary stays above parcel details; use expandable thematic details and independent panel scrolling. On mobile keep the map visible above the panel.
+
+- Latest feedback: widen right panel (~43% desktop), show synthesized information without disclosure clicks; sources and methodology at the very end. Short labels, visible metric cards. No repetitive explanations in primary content.
