@@ -51,12 +51,6 @@ export async function loadDiagnostic(point,code,{signal,onUpdate}){
 const sources=diagnosticSources(point,code);let cursor=0;
 sources.forEach(source=>onUpdate(source.key,{...source,status:'loading'}));
 
-// Artificialisation communale – source CEREMA, lancée en parallèle
-const artifKey='artificialisation';
-const artifUrl='https://apidf.cerema.fr/artificialisation/communes/?code_insee='+code;
-const artifBase={key:artifKey,title:'Artificialisation des sols',source:'CEREMA · OCS GE / Sparte',scope:'Données à l’échelle de la commune',url:artifUrl};
-onUpdate(artifKey,{...artifBase,status:'loading',items:[]});
-
 await Promise.all([
 ...Array.from({length:3},async()=>{
 while(cursor<sources.length){
@@ -84,12 +78,5 @@ catch(e){if(!signal?.aborted)onUpdate(propKey,{key:propKey,title:'Propriétaires
 catch(e){if(!signal?.aborted)onUpdate(source.key,{...source,status:'error',error:e.message});}
 }
 }),
-// Worker artificialisation CEREMA
-(async()=>{
-try{const d=await getJson(artifUrl,{signal});if(signal?.aborted)return;
-const results=Array.isArray(d?.results)?d.results:Array.isArray(d)?d:[];
-onUpdate(artifKey,{...artifBase,status:'success',items:results,stats:results[0]||null,queriedAt:new Date().toISOString()});}
-catch(e){if(!signal?.aborted)onUpdate(artifKey,{...artifBase,status:'error',error:e.message,items:[]});}
-})(),
 ]);
 }
