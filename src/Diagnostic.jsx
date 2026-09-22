@@ -76,22 +76,28 @@ return <div className={approuves.length?'fact-hit':''}>
 </div>;
 }
 
-function ArtifBlock({src}){
-if(!src||src.status==='loading')return <div><dt>Artificialisation</dt><dd className="fact-loading">…</dd></div>;
-if(src.status==='error')return <div><dt>Artificialisation</dt><dd className="fact-error">Indisponible · CEREMA</dd></div>;
-const s=src.stats;
-if(!s)return <div><dt>Artificialisation</dt><dd className="count-zero">Données non disponibles</dd></div>;
-const taux=s.taux_artif??s.taux_artificialisation??s.tx_artif??null;
-const surfArtif=s.surface_artif??s.surface_artificielle??s.surf_artif??null;
-const surfTot=s.surface_totale??s.surf_totale??s.surf_commune??null;
-const annee=s.annee??s.millesime??s.periode??'';
-if(taux==null&&surfArtif==null)return <div><dt>Artificialisation</dt><dd className="count-zero">Format non reconnu</dd></div>;
-const tauxFmt=taux!=null?+(+taux).toFixed(1)+'%':null;
-const surfFmt=surfArtif!=null?fmt(Math.round(surfArtif))+' ha':null;
-return <div>
-<dt>Artificialisation{annee?' · '+annee:''}</dt>
-<dd>{[tauxFmt,surfFmt].filter(Boolean).join(' — ')}{surfTot!=null&&surfArtif!=null?<span className="kpi-sub"> / {fmt(Math.round(surfTot))} ha commune</span>:null}</dd>
-</div>;
+function ZonePluLine({src}){
+if(!src||src.status==='loading')return <div><dt>Zone PLU</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>Zone PLU</dt><dd className="fact-error">Indisponible</dd></div>;
+if(!src.items.length)return <div><dt>Zone PLU</dt><dd className="count-zero">Non retournée</dd></div>;
+const zones=[...new Set(src.items.map(x=>x.properties?.libelle||x.properties?.typezone||'?'))].join(' · ');
+const desc=[...new Set(src.items.map(x=>x.properties?.liblong).filter(Boolean))].join(' · ');
+return <div className="fact-hit"><dt>Zone PLU</dt><dd>{zones}{desc&&<span className="kpi-sub"> {desc}</span>}</dd></div>;
+}
+
+function RisquesLine({src}){
+if(!src||src.status==='loading')return <div><dt>Risques naturels / techno.</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>Risques naturels / techno.</dt><dd className="fact-error">Indisponible</dd></div>;
+if(!src.items.length)return <div><dt>Risques naturels / techno.</dt><dd className="count-zero">Aucun risque recensé</dd></div>;
+const label=src.items.slice(0,3).join(' · ')+(src.items.length>3?' +'+( src.items.length-3):'');
+return <div className="fact-hit"><dt>Risques ({src.items.length})</dt><dd>{label}</dd></div>;
+}
+
+function ServitudesLine({src}){
+if(!src||src.status==='loading')return <div><dt>Servitudes SUP surfaciques</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error'||!src.items?.length)return <div><dt>Servitudes SUP surfaciques</dt><dd className="count-zero">{src?.status==='error'?'Indisponible':'Aucune au point'}</dd></div>;
+const names=[...new Set(src.items.map(x=>featureLabel(x,'supSurface')).filter(Boolean))].slice(0,3);
+return <div className="fact-hit"><dt>Servitudes SUP ({src.items.length})</dt><dd>{names.join(' · ')}</dd></div>;
 }
 
 export function Diagnostic({city,point,onGeometry,onIsochrone}){
@@ -154,17 +160,19 @@ return <>
 {audience==='promoteur'&&<section className="diagnostic-section promoteur-section">
 <h3>Foncier &amp; Constructibilité</h3>
 <dl className="readable-facts colored-facts promoteur-facts">
-<ScotLine src={data.scot}/>
 <GpuDocLine src={data.gpuDoc}/>
+<ZonePluLine src={data.urban}/>
+<ScotLine src={data.scot}/>
 <PprBlock src={data.ppr}/>
-<ArtifBlock src={data.artificialisation}/>
+<RisquesLine src={data.risks}/>
+<ServitudesLine src={data.supSurface}/>
 </dl>
 <div className="promoteur-links">
 <a href={`https://www.geoportail-urbanisme.gouv.fr/map/#tile=1&lon=${point.lon}&lat=${point.lat}&zoom=17`} target="_blank" rel="noreferrer">Géoportail de l'urbanisme <ArrowUpRight size={12}/></a>
-<a href="https://artificialisation.developpement-durable.gouv.fr/" target="_blank" rel="noreferrer">Portail ZAN <ArrowUpRight size={12}/></a>
+<a href="https://artificialisation.developpement-durable.gouv.fr/cartographie" target="_blank" rel="noreferrer">Cartographie ZAN / Artificialisation <ArrowUpRight size={12}/></a>
 <a href="https://www.georisques.gouv.fr/" target="_blank" rel="noreferrer">Géorisques <ArrowUpRight size={12}/></a>
 </div>
-<p className="promoteur-disclaimer">SCoT, document d'urbanisme et PPR vérifiés au point. Taux d'artificialisation à l'échelle de la commune (source CEREMA). La constructibilité effective reste à vérifier dans les documents opposables.</p>
+<p className="promoteur-disclaimer">Doc. d'urbanisme, zone PLU, SCoT, PPR et servitudes SUP vérifiés au point exact. Risques à l'échelle communale (GASPAR). Pour le taux d'artificialisation voir le portail ZAN. La constructibilité effective reste à vérifier dans les documents opposables.</p>
 </section>}
 
 {/* BLOC 2 : Bâtiments (si identifié) */}
