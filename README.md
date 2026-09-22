@@ -51,3 +51,5 @@ Les tests automatisés et les appels réseau sont vérifiables via les scripts. 
 - Références fonctionnelles : https://github.com/DDT95/val-doise-a-la-loupe et https://github.com/DDT95/diagnostic-aide-decision-95. Interface CartoKob écrite séparément, aucune donnée locale réétiquetée comme nationale.
 
 Dépôt : **CartoKob/cartokob-diagnostic**. Ne pas publier sur DDT95.
+
+Vie quotidienne : eau et assainissement SISPEA, arrêts PAN, contacts DILA, écoles, électricité ORE et loyers ANIL 2025 sont désormais intégrés. Le serveur doit également servir `/api/water`. Les loyers se régénèrent avec `python3 scripts/import-rents.py`. Voir `DATA-COVERAGE.md` pour les périmètres et les rubriques restant à nationaliser.

@@ -1,0 +1,9 @@
+{
+  "year": 2025,
+  "geography": "COG 2025",
+  "sources": {
+    "apartment": "https://static.data.gouv.fr/resources/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025/20251211-145010/pred-app-mef-dhup.csv",
+    "house": "https://static.data.gouv.fr/resources/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025/20251211-145039/pred-mai-mef-dhup.csv"
+  },
+  "attribution": "Estimations ANIL, à partir des données du Groupe SeLoger et de leboncoin"
+}

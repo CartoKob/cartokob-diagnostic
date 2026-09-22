@@ -51,3 +51,21 @@ Le produit couvre géographiquement la France métropolitaine et la Corse. Cela 
 - https://files.data.gouv.fr/geo-dvf/latest/csv/2025/
 - https://dvf-ipfo.infra.geo.data.gouv.fr/faq.html
 - https://bdnb.io/services/services_api/
+
+## Vie quotidienne nationale — ajout du 22 septembre 2026
+
+| Rubrique | Source et méthode | Limites |
+|---|---|---|
+| Prix eau potable / assainissement | Fiche communale SISPEA 2024, tarifs au 1er janvier 2025, 120 m³/an | Champs locaux uniquement, jamais moyennes nationales ; valeurs ambiguës non affichées. Lecture HTML strictement bornée, sensible aux changements du site. Ancienne API Hub'Eau arrêtée le 10/09/2026. |
+| Qualité annuelle de l'eau | Conformités microbiologique et physico-chimique SISPEA 2024 | Service communal, pas analyse du robinet du bien |
+| Arrêts de transport | API expérimentale PAN, sélection dans le vrai polygone communal | Noms distincts, pas nombre garanti d'arrêts physiques ; pas encore lignes, départs, premier/dernier passage |
+| Contacts publics | Annuaire national DILA | Mairie, France Services, police/gendarmerie situées dans la commune ; liste partielle signalée |
+| Électricité résidentielle | Agence ORE, dernière année retournée, somme des opérateurs de cette année | Consommation communale, pas budget individuel |
+| Établissements scolaires | Annuaire national Éducation, regroupement par type | Établissements ouverts référencés, pas sectorisation scolaire |
+| Loyers appartements/maisons | ANIL 2025, import national reproductible `scripts/import-rents.py`, 34 788 codes | Annonces CC non meublées, commune ou maille ; fiabilité et intervalle conservés. Paris/Lyon/Marseille : fourchettes d'arrondissements, pas moyenne inventée. |
+
+Sources : [SISPEA](https://www.services.eaufrance.fr/pro/telechargement), [PAN](https://transport.data.gouv.fr/explore/gtfs-stops), [DILA](https://api-lannuaire.service-public.gouv.fr/), [ORE](https://opendata.agenceore.fr/), [Éducation](https://data.education.gouv.fr/explore/dataset/fr-en-annuaire-education), [ANIL 2025](https://www.data.gouv.fr/datasets/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025).
+
+### Écart restant avec « Le Val-d’Oise à la loupe »
+
+La parité complète n'est pas réalisée : horaires et lignes GTFS, professions/diplômes/familles et mobilités domicile-travail détaillées, RPLS et DPE agrégés, Sitadel, élus, établissements/entreprises, artificialisation et QPV restent à intégrer au niveau national. Les données DDT95 locales ne sont pas extrapolées à la France. Les indicateurs de vente €/m² du site de référence ne sont pas reproduits à partir de mutations multibiens sans méthode validée.

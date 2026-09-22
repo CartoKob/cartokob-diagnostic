@@ -1,5 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import {loadCommune,fmt} from './territory.js';
+import {LocalLife} from './LocalLife.jsx';
 import {MarketSection} from './MarketSection.jsx';
 import {SourceNotes} from './SourceNotes.jsx';
 function Rows({rows}){return <dl className="readable-facts">{rows.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
@@ -22,6 +23,7 @@ export function CommunePortrait({city}){
  <Section title="Emploi des habitants" item={data.employment}>{employment&&<Rows rows={[["Temps complet",fmt(employment.fullTime)],["Temps partiel",fmt(employment.partTime)]]}/>}</Section>
  <Section title="Revenus" item={data.income}>{income&&<Rows rows={[["Niveau de vie médian",income.median==null?'Non disponible':fmt(income.median)+' €/an/UC'],["Taux de pauvreté",income.poverty==null?'Non disponible':fmt(income.poverty,1)+' %']]}/>}</Section>
  <Section title="Risques recensés dans la commune" item={data.risks}>{risks&&<p className="concise-result">{risks.length?risks.join(' · '):'Aucun risque retourné'}</p>}</Section>
+ <LocalLife city={city}/>
  <MarketSection city={city}/>
  <SourceNotes><h4>Commune · {city.nom}</h4>{Object.values(data).map(d=><p key={d.key}><a href={d.url} target="_blank" rel="noreferrer">{d.title} · {d.source}{d.data?.year?' · '+d.data.year:''}</a></p>)}<p>UC : unité de consommation. Emploi : résidents de 15 ans ou plus. Propriétaires : part des résidences principales. Équipements : services recensés, pas établissements distincts. Données absentes ou secrètes : non disponibles. Risques communaux : exposition de la parcelle non établie.</p><a href={`https://www.insee.fr/fr/statistiques/2011101?geo=COM-${city.code}`} target="_blank" rel="noreferrer">Dossier Insee complet</a><button className="text-button" onClick={()=>setRefresh(n=>n+1)}>Actualiser les données communales</button></SourceNotes>
  </section>

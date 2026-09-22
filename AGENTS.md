@@ -23,3 +23,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Updated layout: compact full-height map with a right-hand information panel, no left menu. Keep CartoKob ivory/navy serif identity. Commune summary stays above parcel details; use expandable thematic details and independent panel scrolling. On mobile keep the map visible above the panel.
 
 - Latest feedback: widen right panel (~43% desktop), show synthesized information without disclosure clicks; sources and methodology at the very end. Short labels, visible metric cards. No repetitive explanations in primary content.
+- Water tariffs: SISPEA year 2024 means prices at 1 January 2025, based on 120 m³/year. Keep potable and collective sewer separate; never substitute national averages or ambiguous service tariffs.
+- National transport currently covers PAN stop inventory within commune polygons, not local routes, operating days or timetable frequencies. Do not label dataset counts as line counts.
+- ANIL rental data retains commune/mailled geography and reliability; PLM arrondissement ranges must never become a fabricated commune mean.
