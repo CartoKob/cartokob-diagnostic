@@ -161,3 +161,34 @@ main{height:100dvh;max-width:none;display:flex;flex-direction:column;overflow:hi
   line-height:1;transition:background .15s,color .15s;
 }
 .reset-btn:hover{background:#e8e5de;color:#10265f;}
+
+/* ===== PROMOTEUR SECTION ===== */
+.promoteur-section{background:#fdf8f2;border-top:3px solid #8b5e36}
+.promoteur-section h3{color:#6a3a18}
+.promoteur-facts>div{background:#f5f0e8;border-top-color:#9a7a4a}
+.promoteur-facts>div.fact-hit{background:#e8f0e4!important;border-top-color:#4e7a3e!important}
+.promoteur-links{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}
+.promoteur-links a{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#2353f4;text-decoration:none;padding:5px 9px;border:1px solid #bfc7d6;border-radius:14px;background:#fff9;white-space:nowrap}
+.promoteur-links a:hover{background:#e8edf8}
+.promoteur-disclaimer{font-size:10px!important;color:#78849a!important;line-height:1.5;margin:8px 0 4px;font-style:italic}
+
+/* PPR status tags */
+.ppr-tag{display:inline-block;font:700 8px/1 system-ui,sans-serif;letter-spacing:1px;padding:2px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
+.ppr-approuve{background:#c23b22;color:#fff}
+.ppr-prescrit{background:#b57a20;color:#fff}
+
+
+/* ===== PROMOTEUR SECTION ===== */
+.promoteur-section{background:#fdf8f2;border-top:3px solid #8b5e36}
+.promoteur-section h3{color:#6a3a18}
+.promoteur-facts>div{background:#f5f0e8;border-top-color:#9a7a4a}
+.promoteur-facts>div.fact-hit{background:#e8f0e4!important;border-top-color:#4e7a3e!important}
+.promoteur-links{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}
+.promoteur-links a{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#2353f4;text-decoration:none;padding:5px 9px;border:1px solid #bfc7d6;border-radius:14px;background:#fff9;white-space:nowrap}
+.promoteur-links a:hover{background:#e8edf8}
+.promoteur-disclaimer{font-size:10px!important;color:#78849a!important;line-height:1.5;margin:8px 0 4px;font-style:italic}
+
+/* PPR status tags */
+.ppr-tag{display:inline-block;font:700 8px/1 system-ui,sans-serif;letter-spacing:1px;padding:2px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
+.ppr-approuve{background:#c23b22;color:#fff}
+.ppr-prescrit{background:#b57a20;color:#fff}
