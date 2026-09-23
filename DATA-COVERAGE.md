@@ -23,6 +23,7 @@ Le produit couvre géographiquement la France métropolitaine et la Corse. Cela 
 | Fond cadastral national | IGN WMTS Parcellaire Express PCI | Tuiles affichées dès le zoom 15, masquables. Style et TileMatrixSet vérifiés sur GetCapabilities. Lacunes possibles du plan cadastral et erreurs du service. |
 | Parcelle | IGN API Carto cadastre/parcelle | Référence, section, numéro, contenance et géométrie intersectant le point. Ne constitue pas un bornage. |
 | Zonage d’urbanisme | IGN API Carto GPU zone-urba | Intersections au point. N’établit pas, seul, la constructibilité du terrain ou la faisabilité d’un projet. |
+| État du document d’urbanisme | Docurba (beta.gouv.fr), liste par département | Type de document en vigueur (PLU/PLUi/PLUiH/CC/RNU), date de dernière approbation, procédure en cours éventuelle. Échelle communale, ne remplace pas le zonage GPU vérifié au point. Liste par département mise en cache côté client pour la session ; CORS et disponibilité non vérifiés dans cet environnement. |
 | Servitudes | IGN API Carto GPU assiette-sup-s/l/p | Assiettes surfaciques, linéaires et ponctuelles, intersection exacte au point, sans recherche de proximité. |
 | Nature | IGN API Carto / INPN | Natura 2000 Habitats et Oiseaux, ZNIEFF I et II, réserves naturelles nationales, parcs naturels régionaux au point. Ce n’est pas l’ensemble des protections. |
 | Bâtiments | BDNB ouverte, filtre exact sur la parcelle | Groupes de bâtiments associés à une référence unique. Construction, logements et éventuel DPE associé avec identifiant et date de réception. Maximum 20 résultats, limitation signalée. Un DPE de groupe n’est pas attribué comme certitude au logement acheté. |
@@ -37,7 +38,7 @@ Le produit couvre géographiquement la France métropolitaine et la Corse. Cela 
 - Melodi : file d’attente espacée de 2,3 secondes et cache mémoire d’une heure dans le client. La diffusion commerciale nécessitera une gestion partagée des quotas adaptée au trafic.
 - Les périmètres urbanisme/nature sont interrogés au point, pas sur toute l’étendue du polygone cadastral.
 - Données manquantes, confidentielles, sources indisponibles et zéro observé sont des états distincts.
-- Desserte GTFS, nuisances sonores, eau, énergie, loyers, constructions autorisées, prix historiques, documents réglementaires détaillés et cartographie complète des risques à la parcelle ne sont pas encore tous intégrés.
+- Desserte GTFS, nuisances sonores, constructions autorisées, prix historiques et cartographie complète des risques à la parcelle ne sont pas encore intégrés. L’état du document d’urbanisme (Docurba) est intégré depuis le diagnostic parcellaire, mais ne remplace pas la lecture du règlement opposable.
 
 ## Références officielles
 
@@ -51,6 +52,7 @@ Le produit couvre géographiquement la France métropolitaine et la Corse. Cela 
 - https://files.data.gouv.fr/geo-dvf/latest/csv/2025/
 - https://dvf-ipfo.infra.geo.data.gouv.fr/faq.html
 - https://bdnb.io/services/services_api/
+- https://docurba.beta.gouv.fr/dev/api
 
 ## Vie quotidienne nationale — ajout du 22 septembre 2026
 

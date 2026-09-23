@@ -7,6 +7,29 @@ const data=await r.json();if(data?.error || (data?.response_code>=400))throw new
 export const featureList=d=>{if(!Array.isArray(d?.features))throw Error('Format géographique inattendu');return d.features;};
 export function riskList(d){if(!Array.isArray(d?.data))throw Error('Format risques inattendu');return [...new Set(d.data.flatMap(c=>(c.risques_detail||[]).map(x=>x.libelle_risque_long||x.libelle_risque)).filter(Boolean))];}
 export function pprList(d){if(!Array.isArray(d?.data))throw Error('Format PPR inattendu');return d.data;}
+export function departementFromCode(code){
+if(/^97\d/.test(code))return code.slice(0,3);
+if(/^2[ab]/i.test(code))return code.slice(0,2).toUpperCase();
+return code.slice(0,2);
+}
+export function docurbaRecord(records,code){
+if(!Array.isArray(records))throw Error('Format urbanisme inattendu');
+const rec=records.find(r=>r.code_insee===code);
+if(!rec)throw Error('Commune absente de Docurba');
+const items=[];
+if(rec.plan_libelle_code_etat_simplifie)items.push({label:'Document en vigueur',value:rec.plan_libelle_code_etat_simplifie});
+if(rec.pa_type_document&&rec.pa_date_approbation)items.push({label:'Dernière approbation',value:`${rec.pa_type_document} · approuvé le ${rec.pa_date_approbation}`});
+if(rec.pc_type_document&&rec.pc_type_procedure)items.push({label:'Procédure en cours',value:`${rec.pc_type_document} · ${rec.pc_type_procedure}${rec.pc_date_prescription?' depuis le '+rec.pc_date_prescription:''}`});
+return items;
+}
+const docurbaCache=new Map();
+function fetchDocurbaDept(dept){
+if(!docurbaCache.has(dept)){
+const p=getJson('https://docurba.beta.gouv.fr/api/communes?departement='+dept).catch(e=>{docurbaCache.delete(dept);throw e;});
+docurbaCache.set(dept,p);
+}
+return docurbaCache.get(dept);
+}
 export function diagnosticSources(point,code){
 const geom=encodeURIComponent(JSON.stringify({type:'Point',coordinates:[point.lon,point.lat]}));
 const carto='https://apicarto.ign.fr/api/';
@@ -78,5 +101,12 @@ catch(e){if(!signal?.aborted)onUpdate(propKey,{key:propKey,title:'Propriétaires
 catch(e){if(!signal?.aborted)onUpdate(source.key,{...source,status:'error',error:e.message});}
 }
 }),
+(async()=>{
+const dept=departementFromCode(code);
+const meta={key:'docurba',title:'État du document d’urbanisme',source:'Docurba · beta.gouv.fr',scope:'À l’échelle de la commune ; ne remplace pas le zonage vérifié au point',url:'https://docurba.beta.gouv.fr/api/communes?departement='+dept};
+onUpdate('docurba',{...meta,status:'loading',items:[]});
+try{const records=await fetchDocurbaDept(dept);if(signal?.aborted)return;const items=docurbaRecord(records,code);onUpdate('docurba',{...meta,status:'success',items,queriedAt:new Date().toISOString()});}
+catch(e){if(!signal?.aborted)onUpdate('docurba',{...meta,status:'error',error:e.message,items:[]});}
+})(),
 ]);
 }

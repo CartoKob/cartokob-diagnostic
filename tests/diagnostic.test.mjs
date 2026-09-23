@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {normalize,searchCommunes} from '../src/search.js';
-import {riskList,loadDiagnostic,diagnosticSources} from '../src/diagnostic.js';
+import {riskList,loadDiagnostic,diagnosticSources,departementFromCode,docurbaRecord} from '../src/diagnostic.js';
 const communes=JSON.parse(await readFile(new URL('../public/communes.json',import.meta.url))).map(c=>({...c,key:normalize(c.nom)}));
 test('coverage includes Corsica, large and small municipalities; excludes overseas',()=>{
  for(const code of ['75056','69123','13055','2A004','2B033'])assert.ok(communes.some(c=>c.code===code));
@@ -13,4 +13,11 @@ test('search supports accents, postal codes and names',()=>{assert.equal(searchC
 test('risk parser extracts nested GASPAR risks without duplicates',()=>{assert.deepEqual(riskList({data:[{risques_detail:[{libelle_risque_long:'Inondation'},{libelle_risque_long:'Inondation'}]}]}),['Inondation']);assert.throws(()=>riskList({message:'error'}));});
 test('point geometry retains exact coordinates and risks use commune scope',()=>{const s=diagnosticSources({lon:-4.486,lat:48.39},'29019');assert.deepEqual(JSON.parse(new URL(s[0].url).searchParams.get('geom')).coordinates,[-4.486,48.39]);assert.ok(s.find(x=>x.key==='risks').url.endsWith('29019'));});
 test('one failed source does not erase successful or empty results',async()=>{const original=global.fetch;global.fetch=async url=>url.includes('/gpu/')?new Response('',{status:503}):Response.json(url.includes('gaspar')?{data:[]}:{features:[]});const updates={};try{await loadDiagnostic({lat:45.75,lon:4.83},'69123',{signal:new AbortController().signal,onUpdate:(k,v)=>updates[k]=v});assert.equal(updates.urban.status,'error');assert.equal(updates.parcel.status,'success');assert.deepEqual(updates.parcel.items,[]);assert.equal(updates.risks.status,'success');}finally{global.fetch=original;}});
+test('departement code handles Corsica and overseas prefixes',()=>{assert.equal(departementFromCode('69123'),'69');assert.equal(departementFromCode('2A004'),'2A');assert.equal(departementFromCode('2b033'),'2B');assert.equal(departementFromCode('97411'),'974');});
+test('docurba record surfaces current document, approval and ongoing procedure',()=>{
+const records=[{code_insee:'01001',plan_libelle_code_etat_simplifie:'PLU approuvé',pa_type_document:'PLU',pa_date_approbation:'2010-02-09',pc_type_document:'',pc_type_procedure:''}];
+assert.deepEqual(docurbaRecord(records,'01001'),[{label:'Document en vigueur',value:'PLU approuvé'},{label:'Dernière approbation',value:'PLU · approuvé le 2010-02-09'}]);
+assert.throws(()=>docurbaRecord(records,'01002'));
+assert.throws(()=>docurbaRecord({message:'error'},'01001'));
+});
 test('building data is fetched only for one exact cadastral identifier',async()=>{const original=global.fetch,seen=[];global.fetch=async url=>{seen.push(url);if(url.includes('/cadastre/'))return Response.json({features:[{properties:{idu:'69382000AL0024'}}]});if(url.includes('api.bdnb.io'))return Response.json([{batiment_groupe_id:'test-building',nb_log:2}]);return Response.json(url.includes('gaspar')?{data:[]}:{features:[]});};const updates={};try{await loadDiagnostic({lat:45.75,lon:4.83},'69123',{signal:new AbortController().signal,onUpdate:(key,value)=>updates[key]=value});assert.ok(seen.some(u=>u.includes('parcelle_id=eq.69382000AL0024')));assert.equal(updates.buildings.items[0].properties.nb_log,2);assert.ok(updates.buildings.scope.includes('pas nécessairement au logement'));}finally{global.fetch=original;}});
