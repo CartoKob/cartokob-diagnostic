@@ -44,7 +44,7 @@ Les tests automatisés et les appels réseau sont vérifiables via les scripts. 
 
 ## Sources et crédits
 
-- API Découpage administratif ; Insee Melodi ; IGN API Carto / Géoplateforme ; Géorisques ; BDNB ; DGFiP / Etalab DVF ; Valhalla / OpenStreetMap.
+- API Découpage administratif ; Insee Melodi ; IGN API Carto / Géoplateforme ; Docurba (beta.gouv.fr) ; Géorisques ; BDNB ; DGFiP / Etalab DVF ; Valhalla / OpenStreetMap.
 - Fond : © contributeurs OpenStreetMap ; parcellaire IGN / DGFiP.
 - Phosphor (MIT), marqueur Leaflet (BSD-2-Clause), DM Sans et Libre Caslon Display (OFL).
 - Contour France de l’en-tête : ressource de la vitrine locale CartoKob, provenance géographique à confirmer avant publication.

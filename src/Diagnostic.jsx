@@ -63,6 +63,13 @@ const url=p.urlfic;
 return <div className="fact-hit"><dt>Doc. urbanisme</dt><dd>{url?<a href={url} target="_blank" rel="noreferrer">{type}{nom?' · '+nom:''} <ArrowUpRight size={12}/></a>:<>{type}{nom?' · '+nom:''}</>}</dd></div>;
 }
 
+function DocurbaLine({src}){
+if(!src||src.status==='loading')return <div><dt>État du doc. d’urbanisme</dt><dd className="fact-loading">…</dd></div>;
+if(src.status==='error')return <div><dt>État du doc. d’urbanisme</dt><dd className="fact-error">Indisponible</dd></div>;
+if(!src.items.length)return <div><dt>État du doc. d’urbanisme</dt><dd className="count-zero">Non renseigné</dd></div>;
+return <div className="fact-hit"><dt>État du doc. d’urbanisme</dt><dd>{src.items.map(i=>i.value).join(' · ')}</dd></div>;
+}
+
 function PprBlock({src}){
 if(!src||src.status==='loading')return <div><dt>PPR</dt><dd className="fact-loading">…</dd></div>;
 if(src.status==='error')return <div><dt>PPR</dt><dd className="fact-error">Indisponible</dd></div>;
@@ -161,6 +168,7 @@ return <>
 <h3>Foncier &amp; Constructibilité</h3>
 <dl className="readable-facts colored-facts promoteur-facts">
 <GpuDocLine src={data.gpuDoc}/>
+<DocurbaLine src={data.docurba}/>
 <ZonePluLine src={data.urban}/>
 <ScotLine src={data.scot}/>
 <PprBlock src={data.ppr}/>
@@ -172,7 +180,7 @@ return <>
 <a href="https://artificialisation.developpement-durable.gouv.fr/cartographie" target="_blank" rel="noreferrer">Cartographie ZAN / Artificialisation <ArrowUpRight size={12}/></a>
 <a href="https://www.georisques.gouv.fr/" target="_blank" rel="noreferrer">Géorisques <ArrowUpRight size={12}/></a>
 </div>
-<p className="promoteur-disclaimer">Doc. d'urbanisme, zone PLU, SCoT, PPR et servitudes SUP vérifiés au point exact. Risques à l'échelle communale (GASPAR). Pour le taux d'artificialisation voir le portail ZAN. La constructibilité effective reste à vérifier dans les documents opposables.</p>
+<p className="promoteur-disclaimer">Doc. d'urbanisme, zone PLU, SCoT, PPR et servitudes SUP vérifiés au point exact. État du document d'urbanisme (Docurba) et risques à l'échelle communale (GASPAR). Pour le taux d'artificialisation voir le portail ZAN. La constructibilité effective reste à vérifier dans les documents opposables.</p>
 </section>}
 
 {/* BLOC 2 : Bâtiments (si identifié) */}
